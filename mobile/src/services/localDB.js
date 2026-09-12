@@ -84,8 +84,14 @@ export async function initializeDB() {
 
     if (!hasArm) {
       console.log('Migration: adding arm column');
-      await database.execAsync(`ALTER TABLE readings ADD COLUMN arm TEXT;`);
-      console.log('Migration: arm column added');
+      try {
+        await database.execAsync(`ALTER TABLE readings ADD COLUMN arm TEXT;`);
+        console.log('Migration: arm column added');
+      } catch (e) {
+        if (!e.message?.includes('duplicate column') && !e.message?.includes('duplicate column name')) {
+          console.error('Migration error adding arm column:', e);
+        }
+      }
     }
 
     await database.execAsync(`CREATE INDEX IF NOT EXISTS idx_readings_synced ON readings(synced_at);`);
