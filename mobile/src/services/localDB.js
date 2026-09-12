@@ -153,6 +153,19 @@ export async function saveReading(reading) {
   const { id, server_id, ...data } = reading;
   const now = new Date().toISOString();
 
+  if (data.systolic !== undefined && (data.systolic < 20 || data.systolic > 500)) {
+    throw new Error(`Valor inválido para pressão sistólica: ${data.systolic}. Deve estar entre 20 e 500 mmHg.`);
+  }
+  if (data.diastolic !== undefined && (data.diastolic < 10 || data.diastolic > 300)) {
+    throw new Error(`Valor inválido para pressão diastólica: ${data.diastolic}. Deve estar entre 10 e 300 mmHg.`);
+  }
+  if (data.systolic !== undefined && data.diastolic !== undefined && data.systolic <= data.diastolic) {
+    throw new Error(`A pressão sistólica (${data.systolic}) deve ser maior que a diastólica (${data.diastolic}).`);
+  }
+  if (data.heart_rate !== undefined && (data.heart_rate < 20 || data.heart_rate > 300)) {
+    throw new Error(`Valor inválido para frequência cardíaca: ${data.heart_rate}. Deve estar entre 20 e 300 bpm.`);
+  }
+
   if (id && server_id) {
     await db.runAsync(
       `UPDATE readings SET systolic = ?, diastolic = ?, heart_rate = ?, medication_used = ?, medication_name = ?, symptoms = ?, notes = ?, arm = ?, updated_at = ?, synced_at = NULL WHERE server_id = ?`,

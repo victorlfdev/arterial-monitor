@@ -40,14 +40,14 @@ export default function NewReadingScreen() {
   useEffect(() => {
     fetchMedications();
     if (isEditing && params) {
-      setSystolic(String(params.systolic || ''));
-      setDiastolic(String(params.diastolic || ''));
-      setHeartRate(String(params.heart_rate || ''));
-      setMedicationUsed((params.medication_used === '1' || params.medication_used === 'true'));
-      setSelectedMedication(params.medication_name || '');
-      setSelectedArm(params.arm || '');
-      setSymptoms(params.symptoms || '');
-      setNotes(params.notes || '');
+      setSystolic(String(params.systolic ?? ''));
+      setDiastolic(String(params.diastolic ?? ''));
+      setHeartRate(String(params.heart_rate ?? ''));
+      setMedicationUsed(params.medication_used === 1 || params.medication_used === '1' || params.medication_used === true || params.medication_used === 'true');
+      setSelectedMedication(params.medication_name?.toString() || '');
+      setSelectedArm(params.arm?.toString() || '');
+      setSymptoms(params.symptoms?.toString() || '');
+      setNotes(params.notes?.toString() || '');
     }
   }, []);
 

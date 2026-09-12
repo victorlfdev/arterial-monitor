@@ -32,11 +32,21 @@ export default function HistoryScreen() {
   };
 
   const handleDelete = async (id) => {
+    const readingToDelete = readings.find(r => r.id === id);
+    deleteReading(id);
     try {
       await deleteLocalReading(id);
-      deleteReading(id);
     } catch (error) {
       console.error('Error deleting reading:', error);
+      if (readingToDelete) {
+        const current = useAppStore.getState().readings;
+        const stillDeleted = !current.find(r => r.id === id);
+        if (stillDeleted) {
+          useAppStore.setState((prev) => ({
+            readings: [...prev.readings, readingToDelete],
+          }));
+        }
+      }
     }
   };
 
