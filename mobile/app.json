@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Pressão Arterial",
+    "slug": "pressao-arterial",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#2196f3",
+      "resizeMode": "contain",
+      "image": "./assets/images/splash-icon.png"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#2196f3"
+      },
+      "package": "com.pressaoarterial.app",
+      "scheme": "pressaoarterial"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-notifications"
+    ]
+  }
+}

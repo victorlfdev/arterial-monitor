@@ -1,0 +1,72 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Expo
+.mobile/
+.expo/
+*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Data
+data/**/*.db
+data/**/*.sqlite
+data/**/*.log
+
+# Docker
+docker-compose.override.yml
+
+# Build outputs
+dist/
+build/
+*.o
+*.a
+*.so
+*.dylib
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Pnpm
+.pnpm-store/
+
+# Temp files
+*.tmp
+*.temp
+*.bak
+
+# Opencode
+.opencode/
+.impeccable/
+
+# Git
+.git/
+
+# Windows
+desktop.ini
