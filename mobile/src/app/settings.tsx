@@ -18,6 +18,8 @@ import {
   cancelAllAlarms,
 } from '@/services/notifications';
 import { checkHealth } from '@/services/api';
+import { fullSync } from '@/services/sync';
+import useAppStore from '@/store/useAppStore';
 
 export default function SettingsScreen() {
   const [morningHour, setMorningHour] = useState('07');
@@ -27,6 +29,7 @@ export default function SettingsScreen() {
   const [eveningMinute, setEveningMinute] = useState('00');
   const [eveningEnabled, setEveningEnabled] = useState(false);
   const [connected, setConnected] = useState(true);
+  const { setSyncing, setLastSync } = useAppStore();
 
   useEffect(() => {
     checkConnection();
@@ -59,6 +62,20 @@ export default function SettingsScreen() {
     await cancelAllAlarms();
     await scheduleDailyAlarm(0, 1, 'test-alarm');
     Alert.alert('Teste', 'Notificação de teste agendada para 1 minuto');
+  };
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      await fullSync();
+      setLastSync(new Date().toISOString());
+      Alert.alert('Sincronização', 'Dados sincronizados com sucesso');
+    } catch (error) {
+      console.error('Sync error:', error);
+      Alert.alert('Erro', 'Falha ao sincronizar dados');
+    } finally {
+      setSyncing(false);
+    }
   };
 
   return (
@@ -166,7 +183,7 @@ export default function SettingsScreen() {
             <Ionicons name="cloud" size={20} />
             {' '}Sincronização
           </Text>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity style={styles.actionButton} onPress={handleSync}>
             <Ionicons name="sync" size={20} color="#2196f3" />
             <Text style={styles.actionButtonText}>Sincronizar agora</Text>
           </TouchableOpacity>

@@ -109,11 +109,16 @@ const useAppStore = create((set, get) => ({
     }
   },
 
-  updateReading: (id, updates) => {
+  updateReading: async (id, updates) => {
     const current = get().readings;
-    set({
-      readings: current.map(r => r.id === id ? { ...r, ...updates } : r),
-    });
+    const updatedReading = current.find(r => r.id === id);
+    if (updatedReading) {
+      const updated = { ...updatedReading, ...updates, synced_at: null };
+      await saveReading({ id, ...updates, synced_at: null });
+      set({
+        readings: current.map(r => r.id === id ? updated : r),
+      });
+    }
   },
 
   deleteReading: (id) => {

@@ -99,30 +99,33 @@ export async function initializeDB() {
 export async function getAllReadings() {
   const db = await getDB();
   const results = await db.getAllAsync('SELECT * FROM readings ORDER BY created_at DESC');
-  const seen = new Set();
-  return results
-    .filter(row => {
-      if (row.server_id) {
-        if (seen.has(String(row.server_id))) return false;
-        seen.add(String(row.server_id));
-      }
-      return true;
-    })
-      .map(row => ({
-        id: row.id,
-        server_id: row.server_id || null,
-        systolic: row.systolic,
-        diastolic: row.diastolic,
-        heart_rate: row.heart_rate,
-        medication_used: row.medication_used,
-        medication_name: row.medication_name,
-        symptoms: row.symptoms,
-        notes: row.notes,
-        arm: row.arm,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-        synced_at: row.synced_at,
-      }));
+  const seen = new Map();
+  for (const row of results) {
+    const localKey = String(row.id);
+    const serverKey = row.server_id ? String(row.server_id) : null;
+    if (serverKey && !seen.has(serverKey)) {
+      seen.set(serverKey, row);
+    }
+    if (!seen.has(localKey)) {
+      seen.set(localKey, row);
+    }
+  }
+  return Array.from(seen.values())
+    .map(row => ({
+      id: row.id,
+      server_id: row.server_id || null,
+      systolic: row.systolic,
+      diastolic: row.diastolic,
+      heart_rate: row.heart_rate,
+      medication_used: row.medication_used,
+      medication_name: row.medication_name,
+      symptoms: row.symptoms,
+      notes: row.notes,
+      arm: row.arm,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      synced_at: row.synced_at,
+    }));
 }
 
 export async function getUnsyncedReadings() {
@@ -177,13 +180,6 @@ export async function syncToLocal(readings) {
 
   for (const reading of readings) {
     let existing = await db.getAllAsync('SELECT * FROM readings WHERE server_id = ?', [reading.id]);
-
-    if (existing.length === 0) {
-      existing = await db.getAllAsync(
-        'SELECT * FROM readings WHERE server_id IS NULL AND systolic = ? AND diastolic = ? AND created_at = ?',
-        [reading.systolic, reading.diastolic, reading.created_at]
-      );
-    }
 
     if (existing.length > 0) {
       const localId = existing[0].id;

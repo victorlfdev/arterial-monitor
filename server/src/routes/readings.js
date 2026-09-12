@@ -79,8 +79,14 @@ router.post('/', async (req, res) => {
     const db = await getDb();
     const { systolic, diastolic, heart_rate, medication_used, medication_name, symptoms, notes, arm } = req.body;
 
-    if (!systolic || !diastolic) {
-      return res.status(400).json({ success: false, error: 'Systolic and diastolic pressure are required' });
+    if (!systolic || !diastolic || systolic < 20 || diastolic < 20) {
+      return res.status(400).json({ success: false, error: 'Systolic and diastolic pressure are required and must be positive values' });
+    }
+    if (systolic > 600 || diastolic > 400) {
+      return res.status(400).json({ success: false, error: 'Pressure values are outside realistic physiological range' });
+    }
+    if (systolic <= diastolic) {
+      return res.status(400).json({ success: false, error: 'Systolic pressure must be greater than diastolic pressure' });
     }
 
     const lastId = await runInsert(db,
@@ -111,6 +117,19 @@ router.put('/:id', async (req, res) => {
     const updates = [];
     const params = [];
 
+    if (systolic !== undefined || diastolic !== undefined) {
+      const sys = systolic !== undefined ? systolic : reading.systolic;
+      const dia = diastolic !== undefined ? diastolic : reading.diastolic;
+      if (sys < 20 || dia < 20) {
+        return res.status(400).json({ success: false, error: 'Systolic and diastolic pressure must be positive values' });
+      }
+      if (sys > 600 || dia > 400) {
+        return res.status(400).json({ success: false, error: 'Pressure values are outside realistic physiological range' });
+      }
+      if (sys <= dia) {
+        return res.status(400).json({ success: false, error: 'Systolic pressure must be greater than diastolic pressure' });
+      }
+    }
     if (systolic !== undefined) { updates.push('systolic = ?'); params.push(systolic); }
     if (diastolic !== undefined) { updates.push('diastolic = ?'); params.push(diastolic); }
     if (heart_rate !== undefined) { updates.push('heart_rate = ?'); params.push(heart_rate); }
