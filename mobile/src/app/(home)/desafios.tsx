@@ -7,10 +7,11 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "@/components/ui/Icon";
-import { colors, spacing, radius, shadowCard } from "@/theme";
+import { useAppColors, spacing, radius, shadowCard } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
 export default function DesafiosScreen() {
+  const colors = useAppColors();
   const insets = useSafeAreaInsets();
   const fontScale = useFontScale();
 
@@ -24,7 +25,9 @@ export default function DesafiosScreen() {
       challengeDesc: { fontSize: fs(13), color: colors.secondaryLabel },
       progressCount: { fontSize: fs(13), color: colors.tertiaryLabel, fontWeight: "600" as const },
     });
-  }, [fontScale]);
+  }, [fontScale, colors]);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const dailyChallenges = [
     {
@@ -152,10 +155,10 @@ export default function DesafiosScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useAppColors>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.secondarySystemBackground,
+    backgroundColor: c.secondarySystemBackground,
   },
   scrollView: {
     flex: 1,
@@ -165,11 +168,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: "700" as const,
-    color: colors.label,
+    color: c.label,
     marginBottom: spacing.xs,
   },
   subtitle: {
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
     marginBottom: spacing.xxl,
   },
   section: {
@@ -177,13 +180,13 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     fontWeight: "600" as const,
-    color: colors.label,
+    color: c.label,
     marginBottom: spacing.md,
   },
   challengeCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderRadius: radius.lg,
     padding: spacing.lg,
     marginBottom: spacing.sm,
@@ -202,11 +205,11 @@ const styles = StyleSheet.create({
   },
   challengeTitle: {
     fontWeight: "600" as const,
-    color: colors.label,
+    color: c.label,
     marginBottom: 2,
   },
   challengeDesc: {
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
   },
   challengeDot: {
     width: 24,
@@ -214,7 +217,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   progressCard: {
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderRadius: radius.lg,
     padding: spacing.lg,
     marginBottom: spacing.sm,
@@ -234,7 +237,7 @@ const styles = StyleSheet.create({
   progressBar: {
     flex: 1,
     height: 6,
-    backgroundColor: colors.separator,
+    backgroundColor: c.separator,
     borderRadius: 3,
     overflow: "hidden",
     marginRight: spacing.sm,
@@ -244,7 +247,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   progressCount: {
-    color: colors.tertiaryLabel,
+    color: c.tertiaryLabel,
     fontWeight: "600" as const,
   },
 });

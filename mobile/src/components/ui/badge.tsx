@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { View, Text, ViewProps, StyleSheet } from "react-native";
-import { colors, spacing, radius } from "@/theme";
+import { useAppColors, spacing, radius } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
 interface BadgeProps extends ViewProps {
@@ -9,20 +9,22 @@ interface BadgeProps extends ViewProps {
   size?: "sm" | "md";
 }
 
-const colorMap = {
-  normal: colors.pressureNormal,
-  elevated: colors.pressureElevated,
-  high: colors.pressureHigh,
-  blue: colors.systemBlue,
-  green: colors.systemGreen,
-  orange: colors.systemOrange,
-  red: colors.systemRed,
-  darkred: colors.pressureHigh,
-  gray: colors.separator,
-} as const;
+const getColorMap = (c: ReturnType<typeof useAppColors>) => ({
+  normal: c.pressureNormal,
+  elevated: c.pressureElevated,
+  high: c.pressureHigh,
+  blue: c.systemBlue,
+  green: c.systemGreen,
+  orange: c.systemOrange,
+  red: c.systemRed,
+  darkred: c.pressureHigh,
+  gray: c.separator,
+}) as const;
 
 export function Badge({ label, color = "gray", size = "md", style }: BadgeProps) {
-  const bg = colorMap[color];
+  const colors = useAppColors();
+  const map = getColorMap(colors);
+  const bg = map[color];
   const fontScale = useFontScale();
   const baseSize = size === "sm" ? 11 : 13;
   const fontSize = useMemo(() => scaleFont(baseSize, fontScale), [fontScale, baseSize]);

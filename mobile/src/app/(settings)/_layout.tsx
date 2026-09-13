@@ -1,27 +1,16 @@
 import { Stack } from 'expo-router/stack';
-import { Platform } from 'react-native';
-import { Color } from 'expo-router';
+import { useAppColors } from '@/theme/colors';
 
 export default function SettingsStackLayout() {
-  const headerBg = Platform.select({
-    ios: Color.ios.systemBackground,
-    android: Color.android.dynamic.surface,
-    default: '#ffffff',
-  });
-
-  const headerTint = Platform.select({
-    ios: Color.ios.label,
-    android: Color.android.dynamic.onSurface,
-    default: '#000000',
-  });
+  const colors = useAppColors();
 
   return (
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: headerBg as string,
+          backgroundColor: colors.headerBackgroundColor,
         },
-        headerTintColor: headerTint as string,
+        headerTintColor: colors.headerTintColor,
         headerTitleStyle: {
           fontWeight: '600' as const,
         },

@@ -1,6 +1,6 @@
 import React from "react";
 import { View, ViewProps, StyleSheet } from "react-native";
-import { colors, spacing, radius, shadows } from "@/theme";
+import { useAppColors, spacing, radius, shadows } from "@/theme";
 
 interface CardProps extends ViewProps {
   children: React.ReactNode;
@@ -8,6 +8,7 @@ interface CardProps extends ViewProps {
 }
 
 export function Card({ children, style, variant = "elevated", ...rest }: CardProps) {
+  const colors = useAppColors();
   return (
     <View
       style={[

@@ -9,10 +9,11 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "@/components/ui/Icon";
 import useAppStore from "@/store/useAppStore";
-import { colors, spacing, radius, shadowCard } from "@/theme";
+import { useAppColors, spacing, radius, shadowCard } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
 export default function ConquistasScreen() {
+  const colors = useAppColors();
   const insets = useSafeAreaInsets();
   const fontScale = useFontScale();
   const { readings } = useAppStore();
@@ -24,14 +25,16 @@ export default function ConquistasScreen() {
   const s = useMemo(() => {
     const fs = (base: number) => scaleFont(base, fontScale);
     return StyleSheet.create({
-      title: { fontSize: fs(28), fontWeight: "700" as const, color: colors.label },
+      title: { fontSize: fs(28), fontWeight: "700" as const, color: colors.label, marginBottom: spacing.xs },
       subtitle: { fontSize: fs(15), color: colors.secondaryLabel, marginTop: spacing.xs },
       progressText: { fontSize: fs(13), color: colors.tertiaryLabel, marginTop: spacing.sm, textAlign: "right" },
       cardTitle: { fontSize: fs(14), fontWeight: "600" as const, color: colors.label, textAlign: "center", marginBottom: spacing.xs },
       cardDesc: { fontSize: fs(12), color: colors.secondaryLabel, textAlign: "center", marginBottom: spacing.sm },
       unlockedText: { fontSize: fs(11), fontWeight: "600" as const, color: colors.onTint },
     });
-  }, [fontScale]);
+  }, [fontScale, colors]);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const achievements = [
     {
@@ -168,10 +171,10 @@ export default function ConquistasScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useAppColors>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.secondarySystemBackground,
+    backgroundColor: c.secondarySystemBackground,
   },
   scrollView: {
     flex: 1,
@@ -184,10 +187,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: "700" as const,
-    color: colors.label,
+    color: c.label,
   },
   subtitle: {
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
     marginTop: spacing.xs,
   },
   progressWrap: {
@@ -195,7 +198,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 8,
-    backgroundColor: colors.separator,
+    backgroundColor: c.separator,
     borderRadius: 4,
     overflow: "hidden",
   },
@@ -204,7 +207,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   progressText: {
-    color: colors.tertiaryLabel,
+    color: c.tertiaryLabel,
     marginTop: spacing.sm,
     textAlign: "right",
   },
@@ -216,7 +219,7 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     minWidth: "48%",
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderRadius: radius.lg,
     padding: spacing.lg,
     alignItems: "center",
@@ -235,15 +238,15 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontWeight: "600" as const,
-    color: colors.label,
+    color: c.label,
     textAlign: "center",
     marginBottom: spacing.xs,
   },
   cardTitleLocked: {
-    color: colors.tertiaryLabel,
+    color: c.tertiaryLabel,
   },
   cardDesc: {
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
     textAlign: "center",
     marginBottom: spacing.sm,
   },
@@ -251,13 +254,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: colors.systemGreen,
+    backgroundColor: c.systemGreen,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: radius.full,
   },
   unlockedText: {
     fontWeight: "600" as const,
-    color: colors.onTint,
+    color: c.onTint,
   },
 });

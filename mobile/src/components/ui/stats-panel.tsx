@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Icon } from "./Icon";
-import { colors, spacing, radius } from "@/theme";
+import { useAppColors, spacing, radius } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
 interface StatsPanelProps {
@@ -16,11 +16,12 @@ interface StatsPanelProps {
 }
 
 export function StatsPanel({ stats, collapsed, onToggle }: StatsPanelProps) {
+  const colors = useAppColors();
   const fontScale = useFontScale();
   const fs = (base: number) => scaleFont(base, fontScale);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.systemBackground }]}>
       <TouchableOpacity
         style={styles.header}
         onPress={onToggle}
@@ -33,40 +34,36 @@ export function StatsPanel({ stats, collapsed, onToggle }: StatsPanelProps) {
           size={22}
           color={colors.secondaryLabel}
         />
-        <Text style={[styles.title, { fontSize: fs(16) }]}>Estatísticas Gerais</Text>
+        <Text style={[styles.title, { fontSize: fs(16), color: colors.label }]}>Estatísticas Gerais</Text>
       </TouchableOpacity>
       {!collapsed && (
-        <View style={styles.content}>
+        <View style={[styles.content, { borderTopColor: colors.separator }]}>
           <View style={styles.row}>
             <View style={styles.statCell}>
-              <Text style={[styles.statValue, { fontSize: fs(22) }]}>{stats.count ?? "—"}</Text>
-              <Text style={[styles.statLabel, { fontSize: fs(11) }]}>Medições</Text>
+              <Text style={[styles.statValue, { fontSize: fs(22), color: colors.systemBlue }]}>{stats.count ?? "—"}</Text>
+              <Text style={[styles.statLabel, { fontSize: fs(11), color: colors.tertiaryLabel }]}>Medições</Text>
             </View>
             <View style={styles.statCell}>
-              <Text style={[styles.statValue, { fontSize: fs(22) }]}>{stats.systolic?.avg ?? "—"}</Text>
-              <Text style={[styles.statLabel, { fontSize: fs(11) }]}>Sistólica Média</Text>
+              <Text style={[styles.statValue, { fontSize: fs(22), color: colors.systemBlue }]}>{stats.systolic?.avg ?? "—"}</Text>
+              <Text style={[styles.statLabel, { fontSize: fs(11), color: colors.tertiaryLabel }]}>Sistólica Média</Text>
             </View>
             <View style={styles.statCell}>
-              <Text style={[styles.statValue, { fontSize: fs(22) }]}>{stats.diastolic?.avg ?? "—"}</Text>
-              <Text style={[styles.statLabel, { fontSize: fs(11) }]}>Diastólica Média</Text>
+              <Text style={[styles.statValue, { fontSize: fs(22), color: colors.systemBlue }]}>{stats.diastolic?.avg ?? "—"}</Text>
+              <Text style={[styles.statLabel, { fontSize: fs(11), color: colors.tertiaryLabel }]}>Diastólica Média</Text>
             </View>
           </View>
           <View style={styles.row}>
             <View style={styles.statCell}>
-              <Text style={[styles.statValueSmall, { fontSize: fs(14) }]}>
-                {stats.systolic?.min ?? "—"} - {stats.systolic?.max ?? "—"}
-              </Text>
-              <Text style={[styles.statLabel, { fontSize: fs(11) }]}>Sistólica</Text>
+              <Text style={[styles.statValueSmall, { fontSize: fs(14), color: colors.label }]}>{stats.systolic?.min ?? "—"} - {stats.systolic?.max ?? "—"}</Text>
+              <Text style={[styles.statLabel, { fontSize: fs(11), color: colors.tertiaryLabel }]}>Sistólica</Text>
             </View>
             <View style={styles.statCell}>
-              <Text style={[styles.statValueSmall, { fontSize: fs(14) }]}>
-                {stats.diastolic?.min ?? "—"} - {stats.diastolic?.max ?? "—"}
-              </Text>
-              <Text style={[styles.statLabel, { fontSize: fs(11) }]}>Diastólica</Text>
+              <Text style={[styles.statValueSmall, { fontSize: fs(14), color: colors.label }]}>{stats.diastolic?.min ?? "—"} - {stats.diastolic?.max ?? "—"}</Text>
+              <Text style={[styles.statLabel, { fontSize: fs(11), color: colors.tertiaryLabel }]}>Diastólica</Text>
             </View>
             <View style={styles.statCell}>
-              <Text style={[styles.statValueSmall, { fontSize: fs(14) }]}>{stats.heart_rate?.avg ?? "—"}</Text>
-              <Text style={[styles.statLabel, { fontSize: fs(11) }]}>FC Média</Text>
+              <Text style={[styles.statValueSmall, { fontSize: fs(14), color: colors.label }]}>{stats.heart_rate?.avg ?? "—"}</Text>
+              <Text style={[styles.statLabel, { fontSize: fs(11), color: colors.tertiaryLabel }]}>FC Média</Text>
             </View>
           </View>
         </View>
@@ -79,7 +76,6 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: spacing.lg,
     marginTop: spacing.lg,
-    backgroundColor: colors.systemBackground,
     borderRadius: radius.lg,
     padding: spacing.lg,
   },
@@ -90,13 +86,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: "600" as const,
-    color: colors.label,
   },
   content: {
     marginTop: spacing.md,
     paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.separator,
   },
   row: {
     flexDirection: "row",
@@ -109,14 +103,11 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontWeight: "700" as const,
-    color: colors.systemBlue,
   },
   statValueSmall: {
     fontWeight: "500" as const,
-    color: colors.label,
   },
   statLabel: {
-    color: colors.tertiaryLabel,
     marginTop: 2,
     textAlign: "center",
   },

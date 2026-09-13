@@ -1,94 +1,81 @@
-import { Platform } from "react-native";
+import { useColorScheme, Platform } from "react-native";
 import { Color } from "expo-router";
 
+const isIOS = Platform.OS === "ios";
+
+export function useAppColors() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+
+  if (isIOS) {
+    return {
+      label: Color.ios.label,
+      secondaryLabel: Color.ios.secondaryLabel,
+      tertiaryLabel: Color.ios.tertiaryLabel,
+      separator: Color.ios.separator,
+      systemBackground: Color.ios.systemBackground,
+      secondarySystemBackground: Color.ios.secondarySystemBackground,
+      tertiarySystemBackground: Color.ios.tertiarySystemBackground,
+      systemBlue: Color.ios.systemBlue,
+      systemGreen: Color.ios.systemGreen,
+      systemOrange: Color.ios.systemOrange,
+      systemRed: Color.ios.systemRed,
+      systemPink: Color.ios.systemPink,
+      systemPurple: Color.ios.systemPurple,
+      systemYellow: Color.ios.systemYellow,
+      pressureNormal: Color.ios.systemGreen,
+      pressureElevated: Color.ios.systemOrange,
+      pressureHigh: Color.ios.systemRed,
+      onTint: Color.ios.systemBackground,
+      onAccent: Color.ios.systemBackground,
+      headerBackgroundColor: Color.ios.systemBackground,
+      headerTintColor: Color.ios.label,
+    } as const;
+  } else {
+    return {
+      label: isDark ? "#FFFFFF" : "#000000",
+      secondaryLabel: isDark ? "#A1A1A1" : "#666666",
+      tertiaryLabel: isDark ? "#717171" : "#888888",
+      separator: isDark ? "#333333" : "#E0E0E0",
+      systemBackground: isDark ? "#0D0D0D" : "#FFFFFF",
+      secondarySystemBackground: isDark ? "#1A1A1A" : "#F5F5F5",
+      tertiarySystemBackground: isDark ? "#242424" : "#FAFAFA",
+      systemBlue: "#3B82F6",
+      systemGreen: "#22C55E",
+      systemOrange: "#F59E0B",
+      systemRed: "#EF4444",
+      systemPink: "#EC4899",
+      systemPurple: "#A855F7",
+      systemYellow: "#EAB308",
+      pressureNormal: "#22C55E",
+      pressureElevated: "#F59E0B",
+      pressureHigh: "#EF4444",
+      onTint: "#FFFFFF",
+      onAccent: "#FFFFFF",
+      headerBackgroundColor: isDark ? "#0D0D0D" : "#FFFFFF",
+      headerTintColor: isDark ? "#FFFFFF" : "#000000",
+    } as const;
+  }
+}
+
 export const colors = {
-  label: Platform.select({
-    ios: Color.ios.label,
-    android: Color.android.dynamic.onSurface,
-    default: "#000000",
-  })!,
-  secondaryLabel: Platform.select({
-    ios: Color.ios.secondaryLabel,
-    android: Color.android.dynamic.onSurfaceVariant,
-    default: "#3c3c43",
-  })!,
-  tertiaryLabel: Platform.select({
-    ios: Color.ios.tertiaryLabel,
-    android: Color.android.dynamic.onSurfaceVariant,
-    default: "#8e8e93",
-  })!,
-  separator: Platform.select({
-    ios: Color.ios.separator,
-    android: Color.android.dynamic.outlineVariant,
-    default: "#c6c6c8",
-  })!,
-  systemBackground: Platform.select({
-    ios: Color.ios.systemBackground,
-    android: Color.android.dynamic.surface,
-    default: "#ffffff",
-  })!,
-  secondarySystemBackground: Platform.select({
-    ios: Color.ios.secondarySystemBackground,
-    android: Color.android.dynamic.surfaceVariant,
-    default: "#f2f2f7",
-  })!,
-  tertiarySystemBackground: Platform.select({
-    ios: Color.ios.tertiarySystemBackground,
-    android: Color.android.dynamic.surfaceVariant,
-    default: "#f9f9f9",
-  })!,
-  systemBlue: Platform.select({
-    ios: Color.ios.systemBlue,
-    android: Color.android.dynamic.primary,
-    default: "#007aff",
-  })!,
-  systemGreen: Platform.select({
-    ios: Color.ios.systemGreen,
-    android: Color.android.dynamic.secondary,
-    default: "#34c759",
-  })!,
-  systemOrange: Platform.select({
-    ios: Color.ios.systemOrange,
-    android: Color.android.dynamic.tertiary,
-    default: "#ff9500",
-  })!,
-  systemRed: Platform.select({
-    ios: Color.ios.systemRed,
-    android: Color.android.dynamic.error,
-    default: "#ff3b30",
-  })!,
-  systemPink: Platform.select({
-    ios: Color.ios.systemPink,
-    android: Color.android.dynamic.onSecondaryContainer,
-    default: "#ff2d55",
-  })!,
-  systemPurple: Platform.select({
-    ios: Color.ios.systemPurple,
-    android: Color.android.dynamic.onTertiary,
-    default: "#af59de",
-  })!,
-  systemYellow: Platform.select({
-    ios: Color.ios.systemYellow,
-    android: Color.android.dynamic.secondaryContainer,
-    default: "#ffcc00",
-  })!,
-
-  pressureNormal: Platform.select({
-    ios: Color.ios.systemGreen,
-    android: Color.android.dynamic.secondary,
-    default: "#34c759",
-  })!,
-  pressureElevated: Platform.select({
-    ios: Color.ios.systemOrange,
-    android: Color.android.dynamic.tertiary,
-    default: "#ff9500",
-  })!,
-  pressureHigh: Platform.select({
-    ios: Color.ios.systemRed,
-    android: Color.android.dynamic.error,
-    default: "#ff3b30",
-  })!,
-
+  label: "#000000",
+  secondaryLabel: "#3c3c43",
+  tertiaryLabel: "#8e8e93",
+  separator: "#c6c6c8",
+  systemBackground: "#ffffff",
+  secondarySystemBackground: "#f2f2f7",
+  tertiarySystemBackground: "#f9f9f9",
+  systemBlue: "#3B82F6",
+  systemGreen: "#22C55E",
+  systemOrange: "#F59E0B",
+  systemRed: "#EF4444",
+  systemPink: "#EC4899",
+  systemPurple: "#A855F7",
+  systemYellow: "#EAB308",
+  pressureNormal: "#22C55E",
+  pressureElevated: "#F59E0B",
+  pressureHigh: "#EF4444",
   onTint: "#ffffff",
   onAccent: "#ffffff",
 } as const;

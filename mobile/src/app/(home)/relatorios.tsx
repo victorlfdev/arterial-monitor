@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   StyleSheet,
   View,
@@ -10,9 +10,10 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { useRouter } from "expo-router";
 import { Icon } from "@/components/ui/Icon";
 import useAppStore from "@/store/useAppStore";
-import { colors, spacing, radius, shadowCard } from "@/theme";
+import { useAppColors, spacing, radius, shadowCard } from "@/theme";
 
 export default function RelatoriosScreen() {
+  const colors = useAppColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { readings, medications } = useAppStore();
@@ -61,6 +62,8 @@ export default function RelatoriosScreen() {
       color: colors.systemBlue,
     },
   ];
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -161,10 +164,10 @@ export default function RelatoriosScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useAppColors>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.secondarySystemBackground,
+    backgroundColor: c.secondarySystemBackground,
   },
   scrollView: {
     flex: 1,
@@ -175,16 +178,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "700" as const,
-    color: colors.label,
+    color: c.label,
     marginBottom: spacing.xs,
   },
   subtitle: {
     fontSize: 15,
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
     marginBottom: spacing.xxl,
   },
   summaryCard: {
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderRadius: radius.lg,
     padding: spacing.lg,
     marginBottom: spacing.xxl,
@@ -200,11 +203,11 @@ const styles = StyleSheet.create({
   summaryValue: {
     fontSize: 28,
     fontWeight: "700" as const,
-    color: colors.systemBlue,
+    color: c.systemBlue,
   },
   summaryLabel: {
     fontSize: 13,
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
     marginTop: 2,
   },
   section: {
@@ -213,13 +216,13 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 17,
     fontWeight: "600" as const,
-    color: colors.label,
+    color: c.label,
     marginBottom: spacing.md,
   },
   reportCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderRadius: radius.md,
     padding: spacing.lg,
     marginBottom: spacing.sm,
@@ -242,23 +245,23 @@ const styles = StyleSheet.create({
   reportTitle: {
     fontSize: 15,
     fontWeight: "600" as const,
-    color: colors.label,
+    color: c.label,
     marginBottom: 2,
   },
   reportDesc: {
     fontSize: 13,
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
   },
   reportLocked: {
     fontSize: 12,
-    color: colors.tertiaryLabel,
+    color: c.tertiaryLabel,
     marginTop: 4,
     fontStyle: "italic" as const,
   },
   shareCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderRadius: radius.md,
     padding: spacing.lg,
     marginBottom: spacing.sm,
@@ -278,12 +281,12 @@ const styles = StyleSheet.create({
   shareTitle: {
     fontSize: 15,
     fontWeight: "600" as const,
-    color: colors.label,
+    color: c.label,
     marginBottom: 2,
   },
   shareDesc: {
     fontSize: 13,
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
   },
   emptyState: {
     alignItems: "center",
@@ -292,13 +295,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: "600" as const,
-    color: colors.label,
+    color: c.label,
     marginTop: spacing.lg,
     marginBottom: spacing.sm,
   },
   emptyDesc: {
     fontSize: 15,
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
     textAlign: "center",
     marginBottom: spacing.xxl,
     paddingHorizontal: spacing.xxl,
@@ -314,6 +317,6 @@ const styles = StyleSheet.create({
   ctaText: {
     fontSize: 16,
     fontWeight: "600" as const,
-    color: colors.onTint,
+    color: c.onTint,
   },
 });

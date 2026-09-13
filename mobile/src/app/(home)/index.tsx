@@ -28,13 +28,14 @@ import { ReadingCard } from "@/components/ui/reading-card";
 import { StatsPanel } from "@/components/ui/stats-panel";
 import { Chip } from "@/components/ui/chip";
 import { FeatureCard } from "@/components/ui/feature-card";
-import { colors, spacing, radius, shadows } from "@/theme";
+import { useAppColors, spacing, radius, shadows } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 import PressureChart from "@/components/PressureChart";
 import { HomeLoadingView } from "@/components/ui/home-loading-view";
 import { EmptyStateView } from "@/components/ui/empty-state-view";
 
 export default function HomeScreen() {
+  const colors = useAppColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const fontScale = useFontScale();
@@ -72,7 +73,7 @@ export default function HomeScreen() {
       stubEmoji: { fontSize: fs(36), marginVertical: spacing.sm },
       stubDesc: { fontSize: fs(12), color: colors.tertiaryLabel },
     });
-  }, [fontScale]);
+  }, [fontScale, colors.onTint, colors.label, colors.tertiaryLabel, colors.secondaryLabel]);
 
   const checkConnection = async () => {
     const isOnline = await checkHealth();
@@ -138,32 +139,34 @@ export default function HomeScreen() {
     ...new Set(readings.map((r) => r.arm).filter(Boolean)),
   ];
 
-  const filtered = readings
-    .filter((r) => {
-      if (filter === "medicated") return r.medication_used === 1;
-      if (filter === "elevated")
-        return classifyPressure(r.systolic, r.diastolic).key === "elevated";
-      if (filter === "high")
-        return classifyPressure(r.systolic, r.diastolic).key.startsWith("high");
-      if (filter === "normal")
-        return classifyPressure(r.systolic, r.diastolic).key === "normal";
-      return true;
-    })
-    .filter(
-      (r) => medicationFilter === "all" || r.medication_name === medicationFilter
-    )
-    .filter((r) => armFilter === "all" || r.arm === armFilter)
-    .sort((a, b) => {
-      if (sortBy === "date_desc")
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      if (sortBy === "date_asc")
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      if (sortBy === "sys_desc") return b.systolic - a.systolic;
-      if (sortBy === "sys_asc") return a.systolic - b.systolic;
-      if (sortBy === "dia_desc") return b.diastolic - a.diastolic;
-      if (sortBy === "dia_asc") return a.diastolic - b.diastolic;
-      return 0;
-    });
+  const filtered = useMemo(() => {
+    return readings
+      .filter((r) => {
+        if (filter === "medicated") return r.medication_used === 1;
+        if (filter === "elevated")
+          return classifyPressure(r.systolic, r.diastolic).key === "elevated";
+        if (filter === "high")
+          return classifyPressure(r.systolic, r.diastolic).key.startsWith("high");
+        if (filter === "normal")
+          return classifyPressure(r.systolic, r.diastolic).key === "normal";
+        return true;
+      })
+      .filter(
+        (r) => medicationFilter === "all" || r.medication_name === medicationFilter
+      )
+      .filter((r) => armFilter === "all" || r.arm === armFilter)
+      .sort((a, b) => {
+        if (sortBy === "date_desc")
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        if (sortBy === "date_asc")
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        if (sortBy === "sys_desc") return b.systolic - a.systolic;
+        if (sortBy === "sys_asc") return a.systolic - b.systolic;
+        if (sortBy === "dia_desc") return b.diastolic - a.diastolic;
+        if (sortBy === "dia_asc") return a.diastolic - b.diastolic;
+        return 0;
+      });
+  }, [readings, filter, medicationFilter, armFilter, sortBy]);
 
   const last = readings[0];
 
@@ -218,6 +221,8 @@ export default function HomeScreen() {
       </Animated.View>
     );
   }
+
+  const styles = createStyles(colors);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -535,7 +540,7 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ReturnType<typeof import("@/theme").useAppColors>) => ({
   container: {
     flex: 1,
     backgroundColor: colors.secondarySystemBackground,
@@ -565,9 +570,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   statusText: {
     color: `${colors.onTint}CC`,

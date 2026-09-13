@@ -2,6 +2,7 @@ import React from "react";
 import { Platform } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useAppColors } from "@/theme/colors";
 
 const iconMap: Record<string, { ios: string; android: string }> = {
   heart: { ios: "heart", android: "favorite" },
@@ -74,7 +75,6 @@ const iconMap: Record<string, { ios: string; android: string }> = {
   "checkmark-circle": { ios: "checkmark-circle", android: "check-circle" },
   "document-text": { ios: "document-text", android: "description" },
   "bar-chart": { ios: "bar", android: "bar-chart" },
-  "document": { ios: "document", android: "description" },
 };
 
 interface IconProps {
@@ -118,11 +118,10 @@ const iconNamesToNormalize = [
   "checkmark-circle", "checkmark-circle",
   "document-text", "document-text",
   "bar-chart", "bar-chart",
-  "options", "options",
-  "document", "document",
 ];
 
 export function Icon({ name, size = 24, color }: IconProps) {
+  const colors = useAppColors();
   const isIOS = Platform.OS === "ios";
 
   let normalizedName = name
@@ -153,7 +152,7 @@ export function Icon({ name, size = 24, color }: IconProps) {
         <Ionicons
           name={iconName as any}
           size={size}
-          color={color || "#000000"}
+          color={color || colors.label}
         />
       );
     }
@@ -161,7 +160,7 @@ export function Icon({ name, size = 24, color }: IconProps) {
       <MaterialIcons
         name={iconName as any}
         size={size}
-        color={color || "#000000"}
+        color={color || colors.label}
       />
     );
   }
@@ -171,7 +170,7 @@ export function Icon({ name, size = 24, color }: IconProps) {
     <MaterialIcons
       name={fallbackName as any}
       size={size}
-      color={color || "#000000"}
+      color={color || colors.label}
     />
   );
 }

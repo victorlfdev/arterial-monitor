@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { TextInput, TextInputProps, View, Text, StyleSheet } from "react-native";
-import { colors, spacing, radius } from "@/theme";
+import { useAppColors, spacing, radius } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
 interface InputProps extends TextInputProps {
@@ -11,6 +11,7 @@ interface InputProps extends TextInputProps {
 }
 
 export function Input({ label, placeholder, suffix, error, style, ...rest }: InputProps) {
+  const colors = useAppColors();
   const fontScale = useFontScale();
   const labelSize = useMemo(() => scaleFont(15, fontScale), [fontScale]);
   const inputSize = useMemo(() => scaleFont(16, fontScale), [fontScale]);
@@ -19,23 +20,27 @@ export function Input({ label, placeholder, suffix, error, style, ...rest }: Inp
 
   return (
     <View style={styles.container}>
-      {label && <Text style={[styles.label, { fontSize: labelSize }]}>{label}</Text>}
+      {label && <Text style={[styles.label, { fontSize: labelSize, color: colors.secondaryLabel }]}>{label}</Text>}
       <View
         style={[
           styles.inputContainer,
+          {
+            backgroundColor: colors.systemBackground,
+            borderColor: colors.separator,
+          },
           error && { borderColor: colors.systemRed },
           style,
         ]}
       >
         <TextInput
-          style={[styles.textInput, { fontSize: inputSize }]}
+          style={[styles.textInput, { fontSize: inputSize, color: colors.label }]}
           placeholder={placeholder}
           placeholderTextColor={colors.tertiaryLabel}
           {...rest}
         />
-        {suffix && <Text style={[styles.suffix, { fontSize: suffixSize }]}>{suffix}</Text>}
+        {suffix && <Text style={[styles.suffix, { fontSize: suffixSize, color: colors.tertiaryLabel }]}>{suffix}</Text>}
       </View>
-      {error && <Text style={[styles.error, { fontSize: errorSize }]}>{error}</Text>}
+      {error && <Text style={[styles.error, { fontSize: errorSize, color: colors.systemRed }]}>{error}</Text>}
     </View>
   );
 }
@@ -46,29 +51,23 @@ const styles = StyleSheet.create({
   },
   label: {
     fontWeight: "600" as const,
-    color: colors.secondaryLabel,
     marginBottom: spacing.sm,
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.systemBackground,
     borderWidth: 1,
-    borderColor: colors.separator,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
   },
   textInput: {
     flex: 1,
-    color: colors.label,
     paddingVertical: spacing.md,
   },
   suffix: {
-    color: colors.tertiaryLabel,
     marginLeft: spacing.sm,
   },
   error: {
-    color: colors.systemRed,
     marginTop: spacing.xs,
   },
 });

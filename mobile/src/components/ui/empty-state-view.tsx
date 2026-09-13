@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
-import { colors, spacing, radius } from "@/theme";
+import { useAppColors, spacing, radius } from "@/theme";
 import { scaleFont } from "@/theme/fontScale";
 
 const PULSE_DURATION = 1200;
@@ -23,6 +23,7 @@ export function EmptyStateView({
   primaryActionLabel = "Registrar primeira medição",
   emptyType,
 }: EmptyStateViewProps) {
+  const colors = useAppColors();
   const buttonOpacity = useSharedValue(1);
 
   useEffect(() => {
@@ -49,11 +50,11 @@ export function EmptyStateView({
 
   return (
     <View style={styles.container}>
-      <Animated.View style={styles.iconContainer}>
+      <Animated.View style={[styles.iconContainer, { backgroundColor: colors.secondarySystemBackground }]}>
         <Text style={styles.icon}>{iconEmoji}</Text>
       </Animated.View>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.description}>{description}</Text>
+      <Text style={[styles.title, { color: colors.label }]}>{title}</Text>
+      <Text style={[styles.description, { color: colors.secondaryLabel }]}>{description}</Text>
       {onPrimaryAction && (
         <TouchableOpacity
           style={styles.ctaButton}
@@ -61,8 +62,8 @@ export function EmptyStateView({
           accessibilityRole="button"
           accessibilityLabel={primaryActionLabel}
         >
-          <Animated.View style={[styles.ctaButtonInner, buttonStyle]}>
-            <Text style={styles.ctaButtonText}>{primaryActionLabel}</Text>
+          <Animated.View style={[styles.ctaButtonInner, { backgroundColor: colors.systemBlue }, buttonStyle]}>
+            <Text style={[styles.ctaButtonText, { color: colors.onTint }]}>{primaryActionLabel}</Text>
           </Animated.View>
         </TouchableOpacity>
       )}
@@ -81,7 +82,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: colors.secondarySystemBackground,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: spacing.xl,
@@ -92,13 +92,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "600" as const,
-    color: colors.label,
     textAlign: "center",
     marginBottom: spacing.sm,
   },
   description: {
     fontSize: 14,
-    color: colors.secondaryLabel,
     textAlign: "center",
     lineHeight: 22,
     marginBottom: spacing.xl,
@@ -109,7 +107,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   ctaButtonInner: {
-    backgroundColor: colors.systemBlue,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
     borderRadius: radius.lg,
@@ -120,6 +117,5 @@ const styles = StyleSheet.create({
   ctaButtonText: {
     fontSize: 16,
     fontWeight: "600" as const,
-    color: colors.onTint,
   },
 });

@@ -17,10 +17,11 @@ import {
   setServerUrl,
   resetServerUrl,
 } from "@/constants/server";
-import { colors, spacing, radius, shadowCard } from "@/theme";
+import { useAppColors, spacing, radius, shadowCard } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
 export default function SettingsScreen() {
+  const colors = useAppColors();
   const insets = useSafeAreaInsets();
   const { isConnected, lastSync } = useAppStore();
   const fontScale = useFontScale();
@@ -44,7 +45,9 @@ export default function SettingsScreen() {
       aboutText: { fontSize: fs(14), color: colors.label, marginBottom: spacing.md, lineHeight: 20 },
       aboutLink: { fontSize: fs(13), color: colors.tertiaryLabel, lineHeight: 18 },
     });
-  }, [fontScale]);
+  }, [fontScale, colors]);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [morningEnabled, setMorningEnabled] = useState(true);
   const [eveningEnabled, setEveningEnabled] = useState(true);
@@ -142,21 +145,16 @@ export default function SettingsScreen() {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity
-              style={styles.switchTouch}
-              onPress={() => setMorningEnabled(!morningEnabled)}
-              activeOpacity={0.7}
+            <Switch
+              value={morningEnabled}
+              onValueChange={setMorningEnabled}
+              trackColor={{ false: colors.separator, true: colors.systemGreen }}
+              thumbColor={colors.onTint}
               accessibilityRole="switch"
               accessibilityLabel="Lembrete matinal"
               accessibilityHint={`Lembrete matinal ${morningEnabled ? 'ativado' : 'desativado'}. Toque para alternar.`}
-            >
-              <Switch
-                value={morningEnabled}
-                onValueChange={() => {}}
-                trackColor={{ false: colors.separator, true: colors.systemGreen }}
-                thumbColor={colors.onTint}
-              />
-            </TouchableOpacity>
+              style={styles.switchTouch}
+            />
           </View>
 
           <View style={styles.settingRow}>
@@ -169,21 +167,16 @@ export default function SettingsScreen() {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity
-              style={styles.switchTouch}
-              onPress={() => setEveningEnabled(!eveningEnabled)}
-              activeOpacity={0.7}
+            <Switch
+              value={eveningEnabled}
+              onValueChange={setEveningEnabled}
+              trackColor={{ false: colors.separator, true: colors.systemGreen }}
+              thumbColor={colors.onTint}
               accessibilityRole="switch"
               accessibilityLabel="Lembrete noturno"
               accessibilityHint={`Lembrete noturno ${eveningEnabled ? 'ativado' : 'desativado'}. Toque para alternar.`}
-            >
-              <Switch
-                value={eveningEnabled}
-                onValueChange={() => {}}
-                trackColor={{ false: colors.separator, true: colors.systemGreen }}
-                thumbColor={colors.onTint}
-              />
-            </TouchableOpacity>
+              style={styles.switchTouch}
+            />
           </View>
 
           <TouchableOpacity style={styles.testBtn} onPress={handleTestNotification} accessibilityRole="button" accessibilityLabel="Enviar notificação de teste">
@@ -262,10 +255,10 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useAppColors>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.secondarySystemBackground,
+    backgroundColor: c.secondarySystemBackground,
   },
   scrollView: {
     flex: 1,
@@ -275,7 +268,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: "700" as const,
-    color: colors.label,
+    color: c.label,
     marginBottom: spacing.lg,
   },
   section: {
@@ -283,13 +276,13 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     fontWeight: "600" as const,
-    color: colors.label,
+    color: c.label,
     marginBottom: spacing.md,
   },
   infoCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderRadius: radius.lg,
     padding: spacing.lg,
     gap: spacing.lg,
@@ -299,7 +292,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: `${colors.systemRed}15`,
+    backgroundColor: `${c.systemRed}15`,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -308,10 +301,10 @@ const styles = StyleSheet.create({
   },
   appTitle: {
     fontWeight: "700" as const,
-    color: colors.label,
+    color: c.label,
   },
   appVersion: {
-    color: colors.tertiaryLabel,
+    color: c.tertiaryLabel,
   },
   statusRow: {
     flexDirection: "row",
@@ -320,22 +313,22 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   statusText: {
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
   },
   syncText: {
-    color: colors.tertiaryLabel,
+    color: c.tertiaryLabel,
     marginTop: spacing.xs,
   },
   settingRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderRadius: radius.md,
     padding: spacing.lg,
     marginBottom: spacing.sm,
@@ -348,16 +341,16 @@ const styles = StyleSheet.create({
   },
   settingTitle: {
     fontWeight: "600" as const,
-    color: colors.label,
+    color: c.label,
   },
   settingDesc: {
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
   },
   testBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: `${colors.systemBlue}10`,
+    backgroundColor: `${c.systemBlue}10`,
     borderRadius: radius.md,
     padding: spacing.md,
     marginTop: spacing.md,
@@ -372,37 +365,38 @@ const styles = StyleSheet.create({
   },
   testBtnText: {
     fontWeight: "600" as const,
-    color: colors.systemBlue,
+    color: c.systemBlue,
   },
   configBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: `${colors.systemBlue}10`,
+    backgroundColor: `${c.systemBlue}10`,
     borderRadius: radius.md,
     padding: spacing.md,
     marginTop: spacing.sm,
     gap: spacing.sm,
+    minHeight: 44,
   },
   configBtnText: {
     fontWeight: "600" as const,
-    color: colors.systemBlue,
+    color: c.systemBlue,
   },
   serverConfig: {
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderRadius: radius.lg,
     padding: spacing.lg,
     ...shadowCard,
   },
   serverInput: {
-    backgroundColor: colors.tertiarySystemBackground,
+    backgroundColor: c.tertiarySystemBackground,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     fontSize: 15,
-    color: colors.label,
+    color: c.label,
     borderWidth: 1,
-    borderColor: colors.separator,
+    borderColor: c.separator,
     marginBottom: spacing.md,
   },
   serverActions: {
@@ -418,39 +412,39 @@ const styles = StyleSheet.create({
     minWidth: 100,
   },
   serverBtnCancel: {
-    backgroundColor: colors.tertiarySystemBackground,
+    backgroundColor: c.tertiarySystemBackground,
   },
   serverBtnTextCancel: {
     fontWeight: "600" as const,
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
   },
   serverBtnSave: {
-    backgroundColor: colors.systemBlue,
+    backgroundColor: c.systemBlue,
   },
   serverBtnTextSave: {
     fontWeight: "600" as const,
-    color: colors.onTint,
+    color: c.onTint,
   },
   serverBtnReset: {
-    backgroundColor: colors.tertiarySystemBackground,
+    backgroundColor: c.tertiarySystemBackground,
   },
   serverBtnTextReset: {
     fontWeight: "600" as const,
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
   },
   aboutCard: {
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderRadius: radius.lg,
     padding: spacing.lg,
     ...shadowCard,
   },
   aboutText: {
-    color: colors.label,
+    color: c.label,
     marginBottom: spacing.md,
     lineHeight: 20,
   },
   aboutLink: {
-    color: colors.tertiaryLabel,
+    color: c.tertiaryLabel,
     lineHeight: 18,
   },
 });

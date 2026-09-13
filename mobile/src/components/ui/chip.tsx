@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { TouchableOpacity, Text, ViewStyle, StyleProp, StyleSheet } from "react-native";
-import { colors, radius } from "@/theme";
+import { useAppColors, radius } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
 interface ChipProps {
@@ -11,6 +11,7 @@ interface ChipProps {
 }
 
 export function Chip({ label, active = false, onPress, style }: ChipProps) {
+  const colors = useAppColors();
   const fontScale = useFontScale();
   const fontSize = useMemo(() => scaleFont(13, fontScale), [fontScale]);
   const accessibilityLabel = active ? `${label} (ativado)` : label;

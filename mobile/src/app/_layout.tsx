@@ -1,17 +1,17 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { ThemeProvider, DarkTheme, DefaultTheme } from "expo-router/react-navigation";
 import { useColorScheme } from "react-native";
+import { useAppColors } from "@/theme/colors";
 import { initializeDB } from "@/services/localDB";
 import { useEffect } from "react";
 import { requestPermissions } from "@/services/notifications";
 import { NavigationBar } from "expo-navigation-bar";
-import { Platform } from "react-native";
-import { Color } from "expo-router";
 
 initializeDB();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const colors = useAppColors();
 
   useEffect(() => {
     requestPermissions();
@@ -37,11 +37,3 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
-
-const colors = {
-  label: Platform.select({
-    ios: Color.ios.label,
-    android: Color.android.dynamic.onSurface,
-    default: "#000000",
-  }),
-};

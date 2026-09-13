@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { View, Text, ViewProps, StyleSheet } from "react-native";
-import { colors, spacing } from "@/theme";
+import { useAppColors, spacing } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
 interface SectionProps extends ViewProps {
@@ -9,12 +9,13 @@ interface SectionProps extends ViewProps {
 }
 
 export function Section({ title, children, style, ...rest }: SectionProps) {
+  const colors = useAppColors();
   const fontScale = useFontScale();
   const titleSize = useMemo(() => scaleFont(15, fontScale), [fontScale]);
 
   return (
-    <View style={[styles.container, style]} {...rest}>
-      <Text style={[styles.title, { fontSize: titleSize }]}>{title}</Text>
+    <View style={[styles.container, { backgroundColor: colors.systemBackground }, style]} {...rest}>
+      <Text style={[styles.title, { fontSize: titleSize, color: colors.secondaryLabel }]}>{title}</Text>
       <View style={styles.content}>{children}</View>
     </View>
   );
@@ -22,14 +23,12 @@ export function Section({ title, children, style, ...rest }: SectionProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.systemBackground,
     borderRadius: 14,
     marginVertical: spacing.sm,
     marginHorizontal: spacing.lg,
   },
   title: {
     fontWeight: "600" as const,
-    color: colors.secondaryLabel,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.sm,

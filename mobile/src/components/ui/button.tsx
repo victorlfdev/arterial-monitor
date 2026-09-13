@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Pressable, ActivityIndicator, ViewStyle, StyleProp, TextProps as RNTextProps } from "react-native";
-import { colors, radius, spacing } from "@/theme";
+import { useAppColors, radius, spacing } from "@/theme";
 import { Text } from "react-native";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
@@ -23,19 +23,6 @@ interface ButtonProps {
   icon?: string;
 }
 
-const variantStyles = {
-  primary: { backgroundColor: colors.systemBlue, textColor: colors.onTint },
-  secondary: { backgroundColor: colors.secondarySystemBackground, textColor: colors.systemBlue },
-  destructive: { backgroundColor: colors.systemRed, textColor: colors.onTint },
-  ghost: { backgroundColor: "transparent", textColor: colors.systemBlue },
-} as const;
-
-const sizeStyles = {
-  sm: { paddingVertical: spacing.md, paddingHorizontal: spacing.md, minHeight: 44 },
-  md: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
-  lg: { paddingVertical: spacing.md, paddingHorizontal: spacing.xl },
-} as const;
-
 export function Button({
   title,
   onPress,
@@ -46,10 +33,11 @@ export function Button({
   style,
   icon,
 }: ButtonProps) {
+  const colors = useAppColors();
   const fontScale = useFontScale();
   const iconSize = useMemo(() => scaleFont(18, fontScale), [fontScale]);
   const textSize = useMemo(() => scaleFont(16, fontScale), [fontScale]);
-  const v = variantStyles[variant];
+  const v = variantStyles[variant](colors);
   const s = sizeStyles[size];
   return (
     <Pressable
@@ -82,3 +70,16 @@ export function Button({
     </Pressable>
   );
 }
+
+const variantStyles = {
+  primary: (c: ReturnType<typeof useAppColors>) => ({ backgroundColor: c.systemBlue, textColor: c.onTint }),
+  secondary: (c: ReturnType<typeof useAppColors>) => ({ backgroundColor: c.secondarySystemBackground, textColor: c.systemBlue }),
+  destructive: (c: ReturnType<typeof useAppColors>) => ({ backgroundColor: c.systemRed, textColor: c.onTint }),
+  ghost: (c: ReturnType<typeof useAppColors>) => ({ backgroundColor: "transparent", textColor: c.systemBlue }),
+} as const;
+
+const sizeStyles = {
+  sm: { paddingVertical: spacing.md, paddingHorizontal: spacing.md, minHeight: 44 },
+  md: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
+  lg: { paddingVertical: spacing.md, paddingHorizontal: spacing.xl },
+} as const;

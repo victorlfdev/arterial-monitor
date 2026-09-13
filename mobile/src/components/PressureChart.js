@@ -1,11 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
+import { useAppColors } from '../theme/colors';
 import { useFontScale, scaleFont } from '../theme/fontScale';
 
 const PressureChart = ({ readings }) => {
   const fontScale = useFontScale();
   const fs = (base) => scaleFont(base, fontScale);
+  const colors = useAppColors();
   const [selectedPeriod, setSelectedPeriod] = useState('24h');
   const PERIODS = [
     { label: '24h', hours: 24 },
@@ -36,25 +38,25 @@ const PressureChart = ({ readings }) => {
       name: 'Ótima/Normal',
       range: 'Abaixo de 120/80 mmHg',
       description: 'Valores ideais para a saúde cardiovascular.',
-      color: '#4caf50'
+      color: colors.pressureNormal,
     },
     {
       name: 'Elevada / Pré-hipertensão',
       range: '120-139 / 80-89 mmHg',
       description: 'Atenção: risco de desenvolver hipertensão.',
-      color: '#ff9800'
+      color: colors.pressureElevated,
     },
     {
       name: 'Hipertensão',
       range: 'Igual ou acima de 140/90 mmHg',
       description: 'Pressão alta. Procure orientação médica.',
-      color: '#f44336'
+      color: colors.pressureHigh,
     },
     {
       name: 'Hipotensão',
       range: 'Abaixo de 90/60 mmHg',
       description: 'Pressão baixa. Pode causar tontura se associada a sintomas.',
-      color: '#2196f3'
+      color: colors.systemBlue,
     }
   ];
 
@@ -69,10 +71,10 @@ const PressureChart = ({ readings }) => {
     const minVal = Math.max(0, Math.floor(Math.min(...allValues, 80) / 20) * 20);
 
     const getCategory = (sys, dia) => {
-      if (sys < 90 || dia < 60) return '#2196f3';
-      if (sys < 120 && dia < 80) return '#4caf50';
-      if (sys < 140 && dia < 90) return '#ff9800';
-      return '#f44336';
+      if (sys < 90 || dia < 60) return colors.systemBlue;
+      if (sys < 120 && dia < 80) return colors.pressureNormal;
+      if (sys < 140 && dia < 90) return colors.pressureElevated;
+      return colors.pressureHigh;
     };
 
     const sysData = chartData.map((r) => ({
@@ -88,7 +90,7 @@ const PressureChart = ({ readings }) => {
     }));
 
     return { sysData, diaData, minMax: { min: minVal, max: maxVal }, count: chartData.length };
-  }, [hasData, chartData]);
+  }, [hasData, chartData, colors]);
 
   const pointerLabelComponent = (items) => {
     if (!items || !items.length) return null;
@@ -98,10 +100,10 @@ const PressureChart = ({ readings }) => {
     const diaValue = items[1]?.value || 0;
     
     const getCategoryInfo = (sys, dia) => {
-      if (sys < 90 || dia < 60) return { text: 'Hipotensão', color: '#2196f3' };
-      if (sys < 120 && dia < 80) return { text: 'Ótima/Normal', color: '#4caf50' };
-      if (sys < 140 && dia < 90) return { text: 'Elevada', color: '#ff9800' };
-      return { text: 'Hipertensão', color: '#f44336' };
+      if (sys < 90 || dia < 60) return { text: 'Hipotensão', color: colors.systemBlue };
+      if (sys < 120 && dia < 80) return { text: 'Ótima/Normal', color: colors.pressureNormal };
+      if (sys < 140 && dia < 90) return { text: 'Elevada', color: colors.pressureElevated };
+      return { text: 'Hipertensão', color: colors.pressureHigh };
     };
 
     const category = getCategoryInfo(sysValue, diaValue);
@@ -114,13 +116,13 @@ const PressureChart = ({ readings }) => {
         minWidth: 120,
         marginBottom: 45
       }}>
-        <Text style={{ color: '#fff', fontSize: fs(12), fontWeight: 'bold', marginBottom: 6, textAlign: 'center' }}>
+        <Text style={{ color: colors.onTint, fontSize: fs(12), fontWeight: 'bold', marginBottom: 6, textAlign: 'center' }}>
           {timeLabel}
         </Text>
         <Text style={{ color: category.color, fontSize: fs(14), fontWeight: 'bold', textAlign: 'center', marginBottom: 4 }}>
           {category.text}
         </Text>
-        <Text style={{ color: '#fff', fontSize: fs(13), fontWeight: 'bold', textAlign: 'center' }}>
+        <Text style={{ color: colors.onTint, fontSize: fs(13), fontWeight: 'bold', textAlign: 'center' }}>
           {sysValue}/{diaValue} mmHg
         </Text>
       </View>
@@ -131,12 +133,12 @@ const PressureChart = ({ readings }) => {
 
   if (!hasData) {
     return (
-      <View style={{ margin: 16, padding: 20, backgroundColor: '#fff', borderRadius: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}>
-        <Text type="subtitle" style={{ marginBottom: 16, color: '#333' }}>
+      <View style={{ margin: 16, padding: 20, backgroundColor: colors.systemBackground, borderRadius: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}>
+        <Text type="subtitle" style={{ marginBottom: 16, color: colors.label }}>
           Evolução Pressão Arterial
         </Text>
         <View style={{ height: 250, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: '#999', textAlign: 'center' }}>
+          <Text style={{ color: colors.tertiaryLabel, textAlign: 'center' }}>
             Nenhuma medição nas últimas {periodLabel === 'Tudo' ? '' : periodLabel}
           </Text>
         </View>
@@ -147,9 +149,9 @@ const PressureChart = ({ readings }) => {
   const chartWidth = Math.max(350, count * 65 + 40);
 
   return (
-    <View style={{ margin: 16, padding: 20, backgroundColor: '#fff', borderRadius: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}>
+    <View style={{ margin: 16, padding: 20, backgroundColor: colors.systemBackground, borderRadius: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <Text type="subtitle" style={{ color: '#333' }}>
+        <Text type="subtitle" style={{ color: colors.label }}>
           Evolução Pressão Arterial
         </Text>
         <View style={{ flexDirection: 'row', gap: 4 }}>
@@ -161,7 +163,7 @@ const PressureChart = ({ readings }) => {
                 paddingHorizontal: 12,
                 paddingVertical: 8,
                 borderRadius: 6,
-                backgroundColor: selectedPeriod === period.label ? '#2196f3' : '#f0f0f0',
+                backgroundColor: selectedPeriod === period.label ? colors.systemBlue : colors.tertiarySystemBackground,
                 minHeight: 44,
                 justifyContent: "center",
                 alignItems: "center",
@@ -169,7 +171,7 @@ const PressureChart = ({ readings }) => {
             >
               <Text style={{
                 fontSize: fs(12),
-                color: selectedPeriod === period.label ? '#fff' : '#666',
+                color: selectedPeriod === period.label ? colors.onTint : colors.secondaryLabel,
                 fontWeight: selectedPeriod === period.label ? 'bold' : '500',
               }}>
                 {period.label}
@@ -190,18 +192,18 @@ const PressureChart = ({ readings }) => {
         maxValue={minMax.max + 20}
         mostNegativeValue={Math.max(0, minMax.min - 20)}
         stepValue={20}
-        xAxisLabelTextColor="#666"
-        yAxisLabelTextColor="#666"
-        xAxisTextStyle={{ color: '#666', fontSize: fs(10) }}
-        yAxisTextStyle={{ color: '#666', fontSize: fs(10) }}
-        xAxisColor="#ccc"
-        yAxisColor="#ccc"
-        rulesColor="#e0e0e0"
+        xAxisLabelTextColor={colors.secondaryLabel}
+        yAxisLabelTextColor={colors.secondaryLabel}
+        xAxisTextStyle={{ color: colors.secondaryLabel, fontSize: fs(10) }}
+        yAxisTextStyle={{ color: colors.secondaryLabel, fontSize: fs(10) }}
+        xAxisColor={colors.separator}
+        yAxisColor={colors.separator}
+        rulesColor={colors.separator}
         hideRules={false}
         thickness={3}
         thickness2={3}
-        color="#f44336"
-        color2="#2196f3"
+        color={colors.pressureHigh}
+        color2={colors.systemBlue}
         hideDataPoints={false}
         dataPointRadius={5}
         initialSpacing={20}
@@ -221,8 +223,8 @@ const PressureChart = ({ readings }) => {
           pointerLabelWidth: 120,
           pointerLabelHeight: 70,
           autoAdjustPointerLabelPosition: true,
-          pointer1Color: "#f44336",
-          pointer2Color: "#2196f3",
+          pointer1Color: colors.pressureHigh,
+          pointer2Color: colors.systemBlue,
           hidePointer1: false,
           hidePointer2: false,
           pointerEvents: 'auto',
@@ -233,10 +235,10 @@ const PressureChart = ({ readings }) => {
         onPress={() => setShowCategoryModal(true)}
         style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 12, paddingVertical: 12, paddingHorizontal: 16, minHeight: 44, borderRadius: 8 }}
       >
-        <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: '#1976d2', justifyContent: "center", alignItems: "center" }}>
-            <Text style={{ color: '#fff', fontSize: fs(12), fontWeight: 'bold' }}>i</Text>
+        <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: colors.systemBlue, justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ color: colors.onTint, fontSize: fs(12), fontWeight: 'bold' }}>i</Text>
         </View>
-        <Text style={{ fontSize: fs(12), color: '#1976d2', fontWeight: '500' }}>
+        <Text style={{ fontSize: fs(12), color: colors.systemBlue, fontWeight: '500' }}>
           Clique para ver a classificação das cores
         </Text>
       </TouchableOpacity>
@@ -252,26 +254,26 @@ const PressureChart = ({ readings }) => {
           activeOpacity={1}
           onPress={() => setShowCategoryModal(false)}
         >
-          <View style={{ width: '85%', maxHeight: '70%', backgroundColor: '#fff', borderRadius: 16, padding: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 }}>
+          <View style={{ width: '85%', maxHeight: '70%', backgroundColor: colors.systemBackground, borderRadius: 16, padding: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <Text style={{ fontSize: fs(18), fontWeight: 'bold', color: '#333' }}>
+              <Text style={{ fontSize: fs(18), fontWeight: 'bold', color: colors.label }}>
                 Classificação da Pressão Arterial
               </Text>
               <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
-                <Text style={{ fontSize: fs(24), color: '#666' }}>×</Text>
+                <Text style={{ fontSize: fs(24), color: colors.secondaryLabel }}>×</Text>
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
               {categories.map((cat, index) => (
-                <View key={index} style={{ marginBottom: 16, padding: 12, backgroundColor: '#f8f9fa', borderRadius: 8, borderLeftWidth: 4, borderLeftColor: cat.color }}>
+                <View key={index} style={{ marginBottom: 16, padding: 12, backgroundColor: colors.tertiarySystemBackground, borderRadius: 8, borderLeftWidth: 4, borderLeftColor: cat.color }}>
                   <Text style={{ fontSize: fs(15), fontWeight: 'bold', color: cat.color, marginBottom: 4 }}>
                     {cat.name}
                   </Text>
-                  <Text style={{ fontSize: fs(13), fontWeight: '600', color: '#555', marginBottom: 4 }}>
+                  <Text style={{ fontSize: fs(13), fontWeight: '600', color: colors.secondaryLabel, marginBottom: 4 }}>
                     {cat.range}
                   </Text>
-                  <Text style={{ fontSize: fs(13), color: '#666' }}>
+                  <Text style={{ fontSize: fs(13), color: colors.secondaryLabel }}>
                     {cat.description}
                   </Text>
                 </View>
@@ -280,9 +282,9 @@ const PressureChart = ({ readings }) => {
 
             <TouchableOpacity
               onPress={() => setShowCategoryModal(false)}
-              style={{ backgroundColor: '#1976d2', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 16 }}
+              style={{ backgroundColor: colors.systemBlue, padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 16 }}
             >
-              <Text style={{ color: '#fff', fontSize: fs(15), fontWeight: 'bold' }}>Fechar</Text>
+              <Text style={{ color: colors.onTint, fontSize: fs(15), fontWeight: 'bold' }}>Fechar</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>

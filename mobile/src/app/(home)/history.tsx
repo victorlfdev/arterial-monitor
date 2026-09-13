@@ -17,10 +17,11 @@ import { getReadingsStats } from "@/services/api";
 import { ReadingCard } from "@/components/ui/reading-card";
 import { StatsPanel } from "@/components/ui/stats-panel";
 import { Chip } from "@/components/ui/chip";
-import { colors, spacing } from "@/theme";
+import { useAppColors, spacing } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
 export default function HistoryScreen() {
+  const colors = useAppColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const fontScale = useFontScale();
@@ -32,7 +33,9 @@ export default function HistoryScreen() {
       sectionHeader: { fontSize: fs(17), fontWeight: "600" as const, color: colors.label, marginBottom: spacing.md },
       emptyText: { fontSize: fs(15), color: colors.tertiaryLabel, textAlign: "center", paddingVertical: spacing.xxl },
     });
-  }, [fontScale]);
+  }, [fontScale, colors]);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [filter, setFilter] = useState("all");
   const [medicationFilter, setMedicationFilter] = useState("all");
@@ -222,10 +225,10 @@ export default function HistoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useAppColors>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.secondarySystemBackground,
+    backgroundColor: c.secondarySystemBackground,
   },
   scrollView: {
     flex: 1,
@@ -245,11 +248,11 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     fontWeight: "600" as const,
-    color: colors.label,
+    color: c.label,
     marginBottom: spacing.md,
   },
   emptyText: {
-    color: colors.tertiaryLabel,
+    color: c.tertiaryLabel,
     textAlign: "center",
     paddingVertical: spacing.xxl,
   },

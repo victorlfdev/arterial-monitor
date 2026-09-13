@@ -1,16 +1,17 @@
 Audit Health Score
 #	Dimension	Score	Key Finding
-1	Accessibility (VoiceOver/TalkBack)	1	Missing accessibility labels on most interactive elements; hard-coded font sizes defeat Dynamic Type
-2	Performance	2	Hard-coded string shadows trigger layout thrash; dual charting libraries; inline filtered arrays on every render
-3	Appearance & Theming	2	Platform color tokens exist but header uses #007aff; onTint is hard-coded #ffffff; Android blue/green mapped incorrectly
-4	Platform Conformance	1	Web-shaped header bars; mixed icon sets (Ionicons vs SF/Material); portrait-lock; custom toggles instead of platform switches; hard-coded shadows
+1	Accessibility (VoiceOver/TalkBack)	2	Accessibility labels added to most interactive elements; font sizes now use scaleFont() with useFontScale()
+2	Performance	3	Shadows use native React Native API; inline filtered arrays memoized with useMemo(); victory-native removed
+3	Appearance & Theming	3	Headers use semantic colors; Android colors use appropriate Material roles; pink/purple/yellow use hex fallbacks for visual consistency
+4	Platform Conformance	3	Platform-native icons via Icon.tsx (Ionicons iOS / MaterialIcons Android); header backgrounds semantic; loading/empty states added
 5	Adaptivity	1	Portrait-only; no landscape support; no keyboard/IME inset handling; touch targets consistently below 44pt/48dp
-Total	 	7/20	Poor (major overhaul)
+Total	 	12/20	Fair (major improvements, remaining issues in adaptivity)
 Platform Conformance Verdict
 Fail. This reads as a web app ported to React Native with a thin native veneer. The navigation bars use headerTintColor and headerStyle which are web-style concepts. The header background is hard-coded blue, not semantic. The app uses Ionicons throughout instead of SF Symbols (iOS) or Material Symbols (Android). The shadow system is CSS-style strings, which React Native does not support — it's a web pattern. The header on the home screen reinvents a navigation bar instead of using native Stack headers or native tabs.
 Executive Summary
-- Audit Health Score: 7/20 (Poor) — major overhaul needed
-- Issues found: P0: 2, P1: 8, P2: 7, P3: 4
+- Audit Health Score: 12/20 (Fair) — major improvements since initial audit
+- Issues found: P0: 0 resolved, P1: 5 resolved, P2: 3 resolved, P3: 2 resolved
+- Remaining: P1 (Android color edge cases, portrait-only orientation), P2 (stats panel chevron accessibility), P3 (feature card maxWidth, ref cleanup)
 - Top 5 critical issues:
 1. Shadow system uses CSS-style strings (boxShadow) which React Native does not support — all cards render without any shadow (dead UI feature)
 2. Hard-coded font sizes throughout defeat Dynamic Type / system font scaling — accessibility-breaking on both platforms
@@ -159,4 +160,41 @@ Recommended Actions
  9. P2 /impeccable optimize [target]: Memoize filtered/sorted arrays in home screen with useMemo().
 10. P2 /impeccable animate [target]: Add loading states and empty-state design to home screen.
 11. P2 /impeccable clarify [target]: Fix blood pressure classification logic. Ensure consistency between reading-card.tsx and index.tsx and verify against AHA/WHO guidelines.
-12. P3 Final step: /impeccable polish [target]: After fixes, run polish pass for final quality check.
+12. P3 Final step: /impeccable polish [target]: ✅ Completed. See polish summary below.
+
+## Polish Pass Summary (2026-09-13)
+
+### Fixed in this pass
+
+| # | Issue | Severity | Fix |
+|---|-------|----------|-----|
+| 1 | Settings switches not toggling (onValueChange empty) | P1 Critical | Wired Switch.onValueChange to setMorningEnabled/setEveningEnabled; removed wrapper TouchableOpacity |
+| 2 | Config button below 44pt touch target | P1 | Added minHeight: 44 to configBtn styles |
+| 3 | Filtered/sorted arrays on every render | P2 | Wrapped filtered array computation in useMemo() |
+| 4 | Status dot too small (8-10px) | P3 | Increased to 12x12pt with borderRadius: 6 |
+| 5 | Android pink/purple/yellow mapped to muted container colors | P2 | Removed Android overrides; use hex fallbacks for visual consistency |
+| 6 | Dead icon mappings (options, document) in Icon.tsx | P3 | Removed unused entries from iconMap and iconNamesToNormalize |
+
+### Verified already fixed (prior audit actions)
+
+| # | Issue | Status |
+|---|-------|--------|
+| 1 | Shadow system CSS strings | ✅ Native shadow API (shadowColor, shadowOffset, shadowOpacity, elevation) |
+| 2 | Hard-coded font sizes | ✅ useFontScale() + scaleFont() across all components |
+| 3 | Mixed icon system | ✅ Platform detection in Icon.tsx (Ionicons iOS / MaterialIcons Android) |
+| 4 | Header background hard-coded blue | ✅ Semantic colors via Platform.select in _layout.tsx |
+| 5 | No loading state | ✅ HomeLoadingView with shimmer animation |
+| 6 | No empty-state design | ✅ EmptyStateView with CTA button |
+| 7 | No accessibility labels | ✅ accessibilityLabel + accessibilityRole on interactive elements |
+| 8 | Dual charting libraries | ✅ victory-native removed from package.json |
+| 9 | Touch targets below minimum | ✅ Chip (minHeight: 44), action icons (44x44), header buttons (44) |
+
+### Remaining issues
+
+| # | Issue | Severity | Notes |
+|---|-------|----------|-------|
+| 1 | Portrait-only orientation | P1 | Requires app.json orientation change + responsive layout design |
+| 2 | StatsPanel chevron lacks accessibility role | P2 | Icon used as collapse toggle without TouchableOpacity wrapper |
+| 3 | Feature cards no maxWidth constraint | P3 | minWidth: 150 set; maxWidth would help on wide screens |
+| 4 | PressureChart useMemo missing dependency | P2 | PERIODS not in dependency array (pre-existing) |
+| 5 | Various pre-existing lint warnings | P3 | React Hook exhaustiveness, unused vars (not introduced by polish) |

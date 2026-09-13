@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, ViewProps, StyleSheet } from "react-native";
 import { Icon } from "./Icon";
-import { colors, spacing, radius, shadows } from "@/theme";
+import { useAppColors, spacing, radius, shadows } from "@/theme";
 import { Badge } from "./badge";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 import { classifyPressure } from "@/lib/bpClassification";
@@ -34,6 +34,7 @@ export function ReadingCard({
   onDelete,
   style,
 }: ReadingCardProps) {
+  const colors = useAppColors();
   const fontScale = useFontScale();
   const cat = classifyPressure(systolic, diastolic);
   const pressureColor =
@@ -52,7 +53,7 @@ export function ReadingCard({
           <Text style={[styles.pressureValue, { color: pressureColor }]}>
             {systolic}/{diastolic}
           </Text>
-          <Text style={[styles.unit, { fontSize: fs(13) }]}>mmHg</Text>
+          <Text style={[styles.unit, { fontSize: fs(13), color: colors.tertiaryLabel }]}>mmHg</Text>
         </View>
         <Badge label={cat.label} color={cat.color} />
       </View>
@@ -61,28 +62,28 @@ export function ReadingCard({
         {heartRate ? (
           <View style={styles.metaItem}>
             <Icon name="heart" size={16} color={colors.systemPink} />
-            <Text style={[styles.metaText, { fontSize: fs(13) }]}>{heartRate} bpm</Text>
+            <Text style={[styles.metaText, { fontSize: fs(13), color: colors.secondaryLabel }]}>{heartRate} bpm</Text>
           </View>
         ) : null}
         {arm && (
           <View style={styles.metaItem}>
             <Icon name="hand" size={16} color={colors.systemPurple} />
-            <Text style={[styles.metaText, { fontSize: fs(13) }]}>{arm === "left" ? "Braço esquerdo" : "Braço direito"}</Text>
+            <Text style={[styles.metaText, { fontSize: fs(13), color: colors.secondaryLabel }]}>{arm === "left" ? "Braço esquerdo" : "Braço direito"}</Text>
           </View>
         )}
-        {timestamp && <Text style={[styles.timestamp, { fontSize: fs(13) }]}>{timestamp}</Text>}
+        {timestamp && <Text style={[styles.timestamp, { fontSize: fs(13), color: colors.tertiaryLabel }]}>{timestamp}</Text>}
       </View>
 
       {medicationName && (
-        <View style={styles.tag}>
+        <View style={[styles.tag, { backgroundColor: `${colors.systemBlue}1A` }]}>
             <Icon name="medkit" size={14} color={colors.systemBlue} />
-          <Text style={[styles.tagText, { fontSize: fs(13) }]}>{medicationName}</Text>
+          <Text style={[styles.tagText, { fontSize: fs(13), color: colors.systemBlue }]}>{medicationName}</Text>
         </View>
       )}
       {symptoms && (
-        <View style={styles.tagSymptom}>
+        <View style={[styles.tagSymptom, { backgroundColor: `${colors.systemOrange}1A` }]}>
             <Icon name="alert-circle-outline" size={14} color={colors.systemOrange} />
-          <Text style={[styles.tagTextSymptom, { fontSize: fs(13) }]}>{symptoms}</Text>
+          <Text style={[styles.tagTextSymptom, { fontSize: fs(13), color: colors.systemOrange }]}>{symptoms}</Text>
         </View>
       )}
     </>
@@ -90,7 +91,7 @@ export function ReadingCard({
 
   if (showActions) {
     return (
-      <View style={[styles.card, style]}>
+      <View style={[styles.card, { backgroundColor: colors.systemBackground }, style]}>
         {onPress ? (
           <TouchableOpacity onPress={onPress} style={{ flex: 1 }} accessibilityRole="button" accessibilityLabel={`Leitura de pressão ${systolic}/${diastolic} mmHg`}>{content}</TouchableOpacity>
         ) : (
@@ -112,12 +113,11 @@ export function ReadingCard({
     );
   }
 
-  return <View style={[styles.card, style]}>{content}</View>;
+  return <View style={[styles.card, { backgroundColor: colors.systemBackground }, style]}>{content}</View>;
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.systemBackground,
     borderRadius: radius.lg,
     padding: spacing.lg,
     marginBottom: spacing.sm,
@@ -137,7 +137,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   unit: {
-    color: colors.tertiaryLabel,
     marginTop: 2,
   },
   meta: {
@@ -152,37 +151,31 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   metaText: {
-    color: colors.secondaryLabel,
   },
   timestamp: {
-    color: colors.tertiaryLabel,
   },
   tag: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.xs,
-    backgroundColor: `${colors.systemBlue}${10}` as string,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: radius.sm,
     marginTop: spacing.sm,
   },
   tagText: {
-    color: colors.systemBlue,
     fontWeight: "500" as const,
   },
   tagSymptom: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.xs,
-    backgroundColor: `${colors.systemOrange}${10}` as string,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: radius.sm,
     marginTop: spacing.xs,
   },
   tagTextSymptom: {
-    color: colors.systemOrange,
     fontWeight: "500" as const,
   },
   actions: {

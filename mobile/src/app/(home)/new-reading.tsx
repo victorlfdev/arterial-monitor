@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   StyleSheet,
   View,
@@ -17,9 +17,10 @@ import { Icon } from "@/components/ui/Icon";
 import useAppStore from "@/store/useAppStore";
 import { updateReading as apiUpdateReading } from "@/services/api";
 import { saveReading, markSynced } from "@/services/localDB";
-import { colors, spacing, radius, shadowCard } from "@/theme";
+import { useAppColors, spacing, radius, shadowCard } from "@/theme";
 
 export default function NewReadingScreen() {
+  const colors = useAppColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
@@ -41,6 +42,8 @@ export default function NewReadingScreen() {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const initialized = useRef(false);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     fetchMedications();
@@ -355,10 +358,10 @@ export default function NewReadingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useAppColors>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.secondarySystemBackground,
+    backgroundColor: c.secondarySystemBackground,
   },
   scrollView: {
     flex: 1,
@@ -369,11 +372,11 @@ const styles = StyleSheet.create({
   screenTitle: {
     fontSize: 28,
     fontWeight: "700" as const,
-    color: colors.label,
+    color: c.label,
     marginBottom: spacing.lg,
   },
   section: {
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderRadius: radius.lg,
     padding: spacing.lg,
     marginBottom: spacing.md,
@@ -382,7 +385,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 15,
     fontWeight: "600" as const,
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
     marginBottom: spacing.md,
   },
   pressureRow: {
@@ -395,52 +398,52 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
     marginBottom: spacing.sm,
   },
   numberInput: {
     fontSize: 36,
     fontWeight: "700" as const,
-    color: colors.label,
+    color: c.label,
     textAlign: "center",
     padding: spacing.sm,
     borderBottomWidth: 2,
-    borderBottomColor: colors.separator,
+    borderBottomColor: c.separator,
     minWidth: 100,
   },
   inputUnit: {
     fontSize: 12,
-    color: colors.tertiaryLabel,
+    color: c.tertiaryLabel,
     marginTop: spacing.xs,
   },
   inputWrap: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderWidth: 1,
-    borderColor: colors.separator,
+    borderColor: c.separator,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
   },
   textInput: {
     flex: 1,
     fontSize: 16,
-    color: colors.label,
+    color: c.label,
     paddingVertical: spacing.md,
   },
   suffix: {
     fontSize: 14,
-    color: colors.tertiaryLabel,
+    color: c.tertiaryLabel,
     paddingHorizontal: spacing.sm,
   },
   textArea: {
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderWidth: 1,
-    borderColor: colors.separator,
+    borderColor: c.separator,
     borderRadius: radius.md,
     padding: spacing.md,
     fontSize: 16,
-    color: colors.label,
+    color: c.label,
     minHeight: 80,
   },
   toggleRow: {
@@ -452,21 +455,21 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: spacing.md,
     borderRadius: radius.md,
-    backgroundColor: colors.tertiarySystemBackground,
+    backgroundColor: c.tertiarySystemBackground,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: colors.separator,
+    borderColor: c.separator,
   },
   toggleBtnActive: {
-    backgroundColor: `${colors.systemBlue}15`,
-    borderColor: colors.systemBlue,
+    backgroundColor: `${c.systemBlue}15`,
+    borderColor: c.systemBlue,
   },
   toggleText: {
     fontSize: 16,
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
   },
   toggleTextActive: {
-    color: colors.systemBlue,
+    color: c.systemBlue,
     fontWeight: "600" as const,
   },
   medScroll: {
@@ -480,30 +483,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     borderRadius: radius.full,
-    backgroundColor: colors.tertiarySystemBackground,
+    backgroundColor: c.tertiarySystemBackground,
     borderWidth: 1,
-    borderColor: colors.separator,
+    borderColor: c.separator,
     minHeight: 44,
     justifyContent: "center",
     alignItems: "center",
   },
   medChipSelected: {
-    backgroundColor: `${colors.systemBlue}15`,
-    borderColor: colors.systemBlue,
+    backgroundColor: `${c.systemBlue}15`,
+    borderColor: c.systemBlue,
   },
   medChipText: {
     fontSize: 14,
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
   },
   medChipTextSelected: {
-    color: colors.systemBlue,
+    color: c.systemBlue,
     fontWeight: "600" as const,
   },
   saveBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.systemBlue,
+    backgroundColor: c.systemBlue,
     padding: spacing.lg,
     borderRadius: radius.lg,
     marginTop: spacing.lg,
@@ -515,6 +518,6 @@ const styles = StyleSheet.create({
   saveBtnText: {
     fontSize: 18,
     fontWeight: "700" as const,
-    color: colors.onTint,
+    color: c.onTint,
   },
 });

@@ -9,10 +9,11 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "@/components/ui/Icon";
-import { colors, spacing, radius, shadowCard } from "@/theme";
+import { useAppColors, spacing, radius, shadowCard } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
 export default function AmigosScreen() {
+  const colors = useAppColors();
   const insets = useSafeAreaInsets();
   const fontScale = useFontScale();
   const [inviteText, setInviteText] = useState("");
@@ -30,7 +31,9 @@ export default function AmigosScreen() {
       privacyText: { flex: 1, fontSize: fs(13), color: colors.systemBlue },
       statusBadgeText: { fontWeight: "600" as const },
     });
-  }, [fontScale]);
+  }, [fontScale, colors]);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const friends = [
     { id: "1", name: "Maria Silva", relation: "Esposa", status: "connected" as const },
@@ -132,10 +135,10 @@ export default function AmigosScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: ReturnType<typeof useAppColors>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.secondarySystemBackground,
+    backgroundColor: c.secondarySystemBackground,
   },
   scrollView: {
     flex: 1,
@@ -145,15 +148,15 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: "700" as const,
-    color: colors.label,
+    color: c.label,
     marginBottom: spacing.xs,
   },
   subtitle: {
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
     marginBottom: spacing.xxl,
   },
   inviteCard: {
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderRadius: radius.lg,
     padding: spacing.lg,
     marginBottom: spacing.xxl,
@@ -174,10 +177,10 @@ const styles = StyleSheet.create({
   },
   inviteTitle: {
     fontWeight: "600" as const,
-    color: colors.label,
+    color: c.label,
   },
   inviteDesc: {
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
   },
   inviteRow: {
     flexDirection: "row",
@@ -185,14 +188,14 @@ const styles = StyleSheet.create({
   },
   inviteInput: {
     flex: 1,
-    backgroundColor: colors.tertiarySystemBackground,
+    backgroundColor: c.tertiarySystemBackground,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     fontSize: 16,
-    color: colors.label,
+    color: c.label,
     borderWidth: 1,
-    borderColor: colors.separator,
+    borderColor: c.separator,
   },
   inviteBtn: {
     width: 48,
@@ -206,13 +209,13 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     fontWeight: "600" as const,
-    color: colors.label,
+    color: c.label,
     marginBottom: spacing.md,
   },
   friendCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.systemBackground,
+    backgroundColor: c.systemBackground,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
@@ -231,10 +234,10 @@ const styles = StyleSheet.create({
   },
   friendName: {
     fontWeight: "600" as const,
-    color: colors.label,
+    color: c.label,
   },
   friendRelation: {
-    color: colors.secondaryLabel,
+    color: c.secondaryLabel,
   },
   statusBadge: {
     paddingHorizontal: spacing.md,
@@ -245,13 +248,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.sm,
-    backgroundColor: `${colors.systemBlue}10`,
+    backgroundColor: `${c.systemBlue}10`,
     borderRadius: radius.md,
     padding: spacing.md,
   },
   privacyText: {
     flex: 1,
-    color: colors.systemBlue,
+    color: c.systemBlue,
   },
   statusBadgeText: {
     fontWeight: "600" as const,
