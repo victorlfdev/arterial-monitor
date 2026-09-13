@@ -1,8 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
+import { useFontScale, scaleFont } from '../theme/fontScale';
 
 const PressureChart = ({ readings }) => {
+  const fontScale = useFontScale();
+  const fs = (base) => scaleFont(base, fontScale);
   const [selectedPeriod, setSelectedPeriod] = useState('24h');
   const PERIODS = [
     { label: '24h', hours: 24 },
@@ -111,13 +114,13 @@ const PressureChart = ({ readings }) => {
         minWidth: 120,
         marginBottom: 45
       }}>
-        <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold', marginBottom: 6, textAlign: 'center' }}>
+        <Text style={{ color: '#fff', fontSize: fs(12), fontWeight: 'bold', marginBottom: 6, textAlign: 'center' }}>
           {timeLabel}
         </Text>
-        <Text style={{ color: category.color, fontSize: 14, fontWeight: 'bold', textAlign: 'center', marginBottom: 4 }}>
+        <Text style={{ color: category.color, fontSize: fs(14), fontWeight: 'bold', textAlign: 'center', marginBottom: 4 }}>
           {category.text}
         </Text>
-        <Text style={{ color: '#fff', fontSize: 13, fontWeight: 'bold', textAlign: 'center' }}>
+        <Text style={{ color: '#fff', fontSize: fs(13), fontWeight: 'bold', textAlign: 'center' }}>
           {sysValue}/{diaValue} mmHg
         </Text>
       </View>
@@ -155,14 +158,17 @@ const PressureChart = ({ readings }) => {
               key={period.label}
               onPress={() => setSelectedPeriod(period.label)}
               style={{
-                paddingHorizontal: 10,
-                paddingVertical: 4,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
                 borderRadius: 6,
                 backgroundColor: selectedPeriod === period.label ? '#2196f3' : '#f0f0f0',
+                minHeight: 44,
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
               <Text style={{
-                fontSize: 12,
+                fontSize: fs(12),
                 color: selectedPeriod === period.label ? '#fff' : '#666',
                 fontWeight: selectedPeriod === period.label ? 'bold' : '500',
               }}>
@@ -186,8 +192,8 @@ const PressureChart = ({ readings }) => {
         stepValue={20}
         xAxisLabelTextColor="#666"
         yAxisLabelTextColor="#666"
-        xAxisTextStyle={{ color: '#666', fontSize: 10 }}
-        yAxisTextStyle={{ color: '#666', fontSize: 10 }}
+        xAxisTextStyle={{ color: '#666', fontSize: fs(10) }}
+        yAxisTextStyle={{ color: '#666', fontSize: fs(10) }}
         xAxisColor="#ccc"
         yAxisColor="#ccc"
         rulesColor="#e0e0e0"
@@ -225,12 +231,12 @@ const PressureChart = ({ readings }) => {
 
       <TouchableOpacity
         onPress={() => setShowCategoryModal(true)}
-        style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 12, paddingVertical: 8 }}
+        style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 12, paddingVertical: 12, paddingHorizontal: 16, minHeight: 44, borderRadius: 8 }}
       >
-        <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: '#1976d2', justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>i</Text>
+        <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: '#1976d2', justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ color: '#fff', fontSize: fs(12), fontWeight: 'bold' }}>i</Text>
         </View>
-        <Text style={{ fontSize: 12, color: '#1976d2', fontWeight: '500' }}>
+        <Text style={{ fontSize: fs(12), color: '#1976d2', fontWeight: '500' }}>
           Clique para ver a classificação das cores
         </Text>
       </TouchableOpacity>
@@ -248,24 +254,24 @@ const PressureChart = ({ readings }) => {
         >
           <View style={{ width: '85%', maxHeight: '70%', backgroundColor: '#fff', borderRadius: 16, padding: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333' }}>
+              <Text style={{ fontSize: fs(18), fontWeight: 'bold', color: '#333' }}>
                 Classificação da Pressão Arterial
               </Text>
               <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
-                <Text style={{ fontSize: 24, color: '#666' }}>×</Text>
+                <Text style={{ fontSize: fs(24), color: '#666' }}>×</Text>
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
               {categories.map((cat, index) => (
                 <View key={index} style={{ marginBottom: 16, padding: 12, backgroundColor: '#f8f9fa', borderRadius: 8, borderLeftWidth: 4, borderLeftColor: cat.color }}>
-                  <Text style={{ fontSize: 15, fontWeight: 'bold', color: cat.color, marginBottom: 4 }}>
+                  <Text style={{ fontSize: fs(15), fontWeight: 'bold', color: cat.color, marginBottom: 4 }}>
                     {cat.name}
                   </Text>
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: '#555', marginBottom: 4 }}>
+                  <Text style={{ fontSize: fs(13), fontWeight: '600', color: '#555', marginBottom: 4 }}>
                     {cat.range}
                   </Text>
-                  <Text style={{ fontSize: 13, color: '#666' }}>
+                  <Text style={{ fontSize: fs(13), color: '#666' }}>
                     {cat.description}
                   </Text>
                 </View>
@@ -276,7 +282,7 @@ const PressureChart = ({ readings }) => {
               onPress={() => setShowCategoryModal(false)}
               style={{ backgroundColor: '#1976d2', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 16 }}
             >
-              <Text style={{ color: '#fff', fontSize: 15, fontWeight: 'bold' }}>Fechar</Text>
+              <Text style={{ color: '#fff', fontSize: fs(15), fontWeight: 'bold' }}>Fechar</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>

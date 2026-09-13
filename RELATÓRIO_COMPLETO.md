@@ -165,6 +165,37 @@ Soft delete
 Validação de pressão sistólica > diastólica
 Busca por data range
 Ordenação por pressure level
+---
+O que NÃO está coberto e sua complexidade:
+Requisição	Complexidade
+Filtrar medições por medicamento	🟢 Baixa
+Filtrar medições por braço	🟢 Baixa
+Agrupar estatísticas (média, min, max)	🟢 Baixa
+Busca por data range	🟢 Baixa
+Ordenação por pressure level	🟢 Baixa
+Validação de pressão sistólica > diastólica	🟢 Baixa
+Exportar dados (PDF, CSV)	🟡 Média
+Soft delete	🟡 Média
+Sincronização com conflict-resolve	🟡 Média
+Autenticação de usuário	🔴 Alta
+Multi-usuário	🔴 Muito Alta
+Resumo para decisão:
+Fácil de implementar (recomendado fazer):
+- Filtrar por medicamento / braço
+- Busca por data range
+- Agrupar estatísticas
+- Validação systolic > diastolic (Bug #1)
+- Ordenação por pressure level
+Médio (depende de prioridade):
+- Exportar dados (PDF, CSV)
+- Soft delete
+- Conflict-resolve na sincronização
+Complexo (requer planejamento/arquitetura):
+- Autenticação de usuário (JWT/sessions)
+- Multi-usuário (redesign completo do esquema do banco)
+
+---
+
 6. ANÁLISE DE INTEGRIDADE DO BANCO DE DADOS
 Problemas de integridade referencial
 - Sem FK entre readings.medication_name e medications.name: O campo medication_name na tabela readings é um texto livre, não uma foreign key para medications.id. Isso significa:
