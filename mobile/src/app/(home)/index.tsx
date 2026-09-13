@@ -7,26 +7,16 @@ import {
   RefreshControl,
   Text,
 } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withTiming,
-  Easing,
-} from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import { Icon } from "@/components/ui/Icon";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import useAppStore from "@/store/useAppStore";
 import { fullSync } from "@/services/sync";
-import { checkHealth, getReadingsStats } from "@/services/api";
+import { checkHealth } from "@/services/api";
 import { classifyPressure } from "@/lib/bpClassification";
-import { ReadingCard } from "@/components/ui/reading-card";
-import { StatsPanel } from "@/components/ui/stats-panel";
-import { Chip } from "@/components/ui/chip";
 import { FeatureCard } from "@/components/ui/feature-card";
 import { useAppColors, spacing, radius, shadows } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
@@ -38,21 +28,10 @@ export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const fontScale = useFontScale();
-  const {
-    readings,
-    deleteReading,
-    fetchReadings,
-    fetchMedications,
-  } = useAppStore();
+  const { readings, fetchReadings } = useAppStore();
 
   const [connected, setConnected] = useState(true);
-  const [stats, setStats] = useState(null);
-  const [showStats, setShowStats] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState("all");
-  const [medicationFilter, setMedicationFilter] = useState("all");
-  const [armFilter, setArmFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("date_desc");
   const [initialLoading, setInitialLoading] = useState(true);
   const loadedRef = useRef(false);
   const [triggerLoad, setTriggerLoad] = useState(0);
@@ -79,23 +58,9 @@ export default function HomeScreen() {
     setConnected(isOnline);
   };
 
-  const loadStats = async () => {
-    try {
-      const result = await getReadingsStats();
-      if (result.success) setStats(result.data);
-    } catch {}
-  };
-
-  useEffect(() => {
-    fetchReadings();
-    fetchMedications();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   useEffect(() => {
     const timer = setTimeout(() => {
       checkConnection();
-      loadStats();
     }, 0);
     return () => clearTimeout(timer);
   }, []);
@@ -118,66 +83,12 @@ export default function HomeScreen() {
     try {
       await fullSync();
     } catch {}
-    await Promise.all([fetchReadings(), checkConnection(), loadStats()]);
+    await Promise.all([fetchReadings(), checkConnection()]);
     setRefreshing(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleDelete = useCallback(
-    (id: number, serverId?: number) => {
-      deleteReading(id);
-      if (serverId) {
-        import("@/services/api").then(({ deleteReading: del }) => del(serverId));
-      }
-    },
-    [deleteReading]
-  );
-
-  const uniqueMeds = [
-    ...new Set(readings.map((r) => r.medication_name).filter(Boolean)),
-  ];
-  const uniqueArms = [
-    ...new Set(readings.map((r) => r.arm).filter(Boolean)),
-  ];
-
-  const filtered = useMemo(() => {
-    return readings
-      .filter((r) => {
-        if (filter === "medicated") return r.medication_used === 1;
-        if (filter === "elevated")
-          return classifyPressure(r.systolic, r.diastolic).key === "elevated";
-        if (filter === "high")
-          return classifyPressure(r.systolic, r.diastolic).key.startsWith("high");
-        if (filter === "normal")
-          return classifyPressure(r.systolic, r.diastolic).key === "normal";
-        return true;
-      })
-      .filter(
-        (r) => medicationFilter === "all" || r.medication_name === medicationFilter
-      )
-      .filter((r) => armFilter === "all" || r.arm === armFilter)
-      .sort((a, b) => {
-        if (sortBy === "date_desc")
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        if (sortBy === "date_asc")
-          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        if (sortBy === "sys_desc") return b.systolic - a.systolic;
-        if (sortBy === "sys_asc") return a.systolic - b.systolic;
-        if (sortBy === "dia_desc") return b.diastolic - a.diastolic;
-        if (sortBy === "dia_asc") return a.diastolic - b.diastolic;
-        return 0;
-      });
-  }, [readings, filter, medicationFilter, armFilter, sortBy]);
-
   const last = readings[0];
-
-  const formatDateShort = (d: string) => {
-    try {
-      return formatDistanceToNow(new Date(d), { locale: ptBR, addSuffix: true });
-    } catch {
-      return "";
-    }
-  };
 
   const formatDateFull = (d: string) => {
     try {
@@ -188,40 +99,6 @@ export default function HomeScreen() {
       return "";
     }
   };
-
-  const CARD_ANIM_DURATION = 300;
-  const CARD_ANIM_EASING = Easing.bezier(0.16, 1, 0.3, 1);
-
-  function ReadingCardAnimated({
-    index,
-    ...cardProps
-  }: { index: number } & React.ComponentProps<typeof ReadingCard>) {
-    const opacity = useSharedValue(0);
-    const translateY = useSharedValue(16);
-
-    useEffect(() => {
-      const delay = index * 60;
-      opacity.value = withDelay(
-        delay,
-        withTiming(1, { duration: CARD_ANIM_DURATION }, () => {})
-      );
-      translateY.value = withDelay(
-        delay,
-        withTiming(0, { duration: CARD_ANIM_DURATION, easing: CARD_ANIM_EASING }, () => {})
-      );
-    }, [triggerLoad, index]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    const animatedStyle = useAnimatedStyle(() => ({
-      opacity: opacity.value,
-      transform: [{ translateY: translateY.value }],
-    }));
-
-    return (
-      <Animated.View style={[styles.animatedCard, animatedStyle]}>
-        <ReadingCard {...cardProps} />
-      </Animated.View>
-    );
-  }
 
   const styles = createStyles(colors);
 
@@ -313,108 +190,6 @@ export default function HomeScreen() {
               />
             </View>
 
-            {/* Stats */}
-            {stats && (
-              <StatsPanel stats={stats} collapsed={!showStats} onToggle={() => setShowStats(!showStats)} />
-            )}
-
-            {/* Filters */}
-            {filtered.length > 0 && (
-              <View style={styles.filterSection}>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.filterScroll}
-                >
-                  {[
-                    { key: "all", label: "Todas" },
-                    { key: "elevated", label: "Elevada" },
-                    { key: "high", label: "Alta" },
-                    { key: "normal", label: "Normal" },
-                  ].map((f) => (
-                    <Chip
-                      key={f.key}
-                      label={f.label}
-                      active={filter === f.key}
-                      onPress={() => setFilter(f.key)}
-                    />
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-
-            {uniqueMeds.length > 0 && (
-              <View style={styles.filterSection}>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.filterScroll}
-                >
-                  <Chip
-                    label="Todos remédios"
-                    active={medicationFilter === "all"}
-                    onPress={() => setMedicationFilter("all")}
-                  />
-                  {uniqueMeds.map((m) => (
-                    <Chip
-                      key={m}
-                      label={m}
-                      active={medicationFilter === m}
-                      onPress={() => setMedicationFilter(m)}
-                    />
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-
-            {uniqueArms.length > 0 && (
-              <View style={styles.filterSection}>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.filterScroll}
-                >
-                  <Chip
-                    label="Todos braços"
-                    active={armFilter === "all"}
-                    onPress={() => setArmFilter("all")}
-                  />
-                  {uniqueArms.map((a) => (
-                    <Chip
-                      key={a}
-                      label={a === "left" ? "Esquerdo" : a === "right" ? "Direito" : a}
-                      active={armFilter === a}
-                      onPress={() => setArmFilter(a)}
-                    />
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-
-            <View style={styles.filterSection}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.filterScroll}
-              >
-                {[
-                  { key: "date_desc", label: "Recentes" },
-                  { key: "date_asc", label: "Antigas" },
-                  { key: "sys_desc", label: "Sist ↓" },
-                  { key: "sys_asc", label: "Sist ↑" },
-                  { key: "dia_desc", label: "Dia ↓" },
-                  { key: "dia_asc", label: "Dia ↑" },
-                ].map((o) => (
-                  <Chip
-                    key={o.key}
-                    label={o.label}
-                    active={sortBy === o.key}
-                    onPress={() => setSortBy(o.key)}
-                  />
-                ))}
-              </ScrollView>
-            </View>
-
             {/* Last Reading */}
             {last && (
               <View style={styles.lastReadingSection}>
@@ -460,6 +235,17 @@ export default function HomeScreen() {
             {/* Chart */}
             {readings.length > 0 && <PressureChart readings={readings} />}
 
+            {/* Empty State */}
+            {readings.length === 0 && !initialLoading && (
+              <View style={styles.emptyState}>
+                <EmptyStateView
+                  onPrimaryAction={() => router.push("/new-reading")}
+                  primaryActionLabel="Registrar primeira medição"
+                  emptyType="no-readings"
+                />
+              </View>
+            )}
+
             {/* Stubs */}
             {readings.length > 0 && (
               <View style={styles.stubsSection}>
@@ -486,55 +272,6 @@ export default function HomeScreen() {
               </View>
             )}
           </>
-        )}
-
-        {/* History List */}
-        {readings.length === 0 && !initialLoading && (
-          <View style={styles.historySection}>
-            <Text style={s.sectionHeader}>Histórico</Text>
-            <EmptyStateView
-              onPrimaryAction={() => router.push("/new-reading")}
-              primaryActionLabel="Registrar primeira medição"
-              emptyType="no-readings"
-            />
-          </View>
-        )}
-
-        {readings.length > 0 && !initialLoading && (
-          <View style={styles.historySection}>
-            <Text style={s.sectionHeader}>Histórico</Text>
-            {filtered.length > 0 ? (
-              filtered.map((r, i) => (
-                <ReadingCardAnimated
-                  key={r.id}
-                  index={i}
-                  systolic={r.systolic}
-                  diastolic={r.diastolic}
-                  heartRate={r.heart_rate || undefined}
-                  timestamp={formatDateShort(r.created_at)}
-                  medicationName={r.medication_name || undefined}
-                  symptoms={r.symptoms || undefined}
-                  arm={r.arm || undefined}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/new-reading",
-                      params: { editingId: r.id, ...r },
-                    })
-                  }
-                  showActions
-                  onEdit={() =>
-                    router.push({
-                      pathname: "/new-reading",
-                      params: { editingId: r.id, ...r },
-                    })
-                  }
-                  onDelete={() => handleDelete(r.id, r.server_id || undefined)}
-                />
-              ))
-            ) : (
-              <EmptyStateView emptyType="no-filters" />
-            )}
-          </View>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -599,19 +336,15 @@ const createStyles = (colors: ReturnType<typeof import("@/theme").useAppColors>)
   newBtn: {
     backgroundColor: colors.systemGreen,
   },
+  emptyState: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+  },
   quickActions: {
     flexDirection: "row",
     flexWrap: "wrap",
     padding: spacing.lg,
     gap: spacing.md,
-  },
-  filterSection: {
-    padding: spacing.lg,
-    paddingTop: spacing.sm,
-  },
-  filterScroll: {
-    paddingRight: spacing.lg,
-    gap: spacing.sm,
   },
   lastReadingSection: {
     paddingHorizontal: spacing.lg,
@@ -684,12 +417,5 @@ const createStyles = (colors: ReturnType<typeof import("@/theme").useAppColors>)
   },
   stubDesc: {
     color: colors.tertiaryLabel,
-  },
-  historySection: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-  },
-  animatedCard: {
-    marginBottom: spacing.sm,
   },
 });
