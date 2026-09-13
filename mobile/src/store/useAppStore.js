@@ -41,7 +41,7 @@ const useAppStore = create((set, get) => ({
             if (!serverResult.data.find(r => String(r.id) === localServerId)) {
               try {
                 await deleteLocalReadingByServerId(parseInt(localServerId));
-              } catch (e) {}
+              } catch {}
             }
           }
 

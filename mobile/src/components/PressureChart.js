@@ -28,7 +28,7 @@ const PressureChart = ({ readings }) => {
         return date >= cutoffDate && date <= now;
       })
       .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-  }, [readings, selectedPeriod]);
+  }, [readings, selectedPeriod]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasData = chartData.length > 0;
   const [showCategoryModal, setShowCategoryModal] = useState(false);

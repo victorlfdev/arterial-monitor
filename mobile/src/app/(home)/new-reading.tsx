@@ -47,6 +47,7 @@ export default function NewReadingScreen() {
 
   useEffect(() => {
     fetchMedications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

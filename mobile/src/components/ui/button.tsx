@@ -1,7 +1,13 @@
 import React, { useMemo } from "react";
-import { Pressable, ActivityIndicator, ViewStyle, StyleProp, TextProps as RNTextProps } from "react-native";
+import {
+  Pressable,
+  ActivityIndicator,
+  ViewStyle,
+  StyleProp,
+  TextProps as RNTextProps,
+  Text,
+} from "react-native";
 import { useAppColors, radius, spacing } from "@/theme";
-import { Text } from "react-native";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
 export function ThemedText({

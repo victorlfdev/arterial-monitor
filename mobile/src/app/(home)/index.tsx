@@ -31,7 +31,6 @@ import { FeatureCard } from "@/components/ui/feature-card";
 import { useAppColors, spacing, radius, shadows } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 import PressureChart from "@/components/PressureChart";
-import { HomeLoadingView } from "@/components/ui/home-loading-view";
 import { EmptyStateView } from "@/components/ui/empty-state-view";
 
 export default function HomeScreen() {
@@ -90,6 +89,7 @@ export default function HomeScreen() {
   useEffect(() => {
     fetchReadings();
     fetchMedications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -120,6 +120,7 @@ export default function HomeScreen() {
     } catch {}
     await Promise.all([fetchReadings(), checkConnection(), loadStats()]);
     setRefreshing(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDelete = useCallback(
@@ -208,7 +209,7 @@ export default function HomeScreen() {
         delay,
         withTiming(0, { duration: CARD_ANIM_DURATION, easing: CARD_ANIM_EASING }, () => {})
       );
-    }, [triggerLoad, index]);
+    }, [triggerLoad, index]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const animatedStyle = useAnimatedStyle(() => ({
       opacity: opacity.value,

@@ -1,5 +1,3 @@
-import { Platform } from 'react-native';
-
 export async function requestPermissions() {
   try {
     const Notifications = await import('expo-notifications');

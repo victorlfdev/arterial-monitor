@@ -1,24 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { StyleSheet, View } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
-  withTiming,
-  Easing,
-} from "react-native-reanimated";
-import { useAppColors, spacing, radius, shadowCard } from "@/theme";
+import Animated from "react-native-reanimated";
+import { useAppColors, spacing, radius } from "@/theme";
 
 const CARD_COUNT = 4;
-
-const CARD_STAGGER = 80;
-const CARD_FADE_IN = 350;
-const CARD_EASE = Easing.bezier(0, 0, 0.2, 1);
-
-const SHIMMER_SWEEP = 1600;
-const SHIMMER_EASE = Easing.bezier(0.4, 0, 0.2, 1);
 
 export function HomeLoadingView() {
   const colors = useAppColors();

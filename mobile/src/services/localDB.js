@@ -16,7 +16,7 @@ export async function initializeDB() {
     let tableInfo;
     try {
       tableInfo = await database.getAllAsync('PRAGMA table_info(readings)');
-    } catch (e) {
+    } catch {
       tableInfo = [];
     }
 
@@ -26,17 +26,17 @@ export async function initializeDB() {
       console.log('Migration: creating new schema with server_id column');
       try {
         await database.execAsync(`CREATE TABLE readings_backup AS SELECT * FROM readings;`);
-      } catch (e) {
+      } catch {
         console.log('Migration: no backup table found, creating from scratch');
       }
       try {
         await database.execAsync(`DROP TABLE IF EXISTS readings;`);
-      } catch (e) {
+      } catch {
         console.log('Migration: readings table not found');
       }
       try {
         await database.execAsync(`DROP TABLE IF EXISTS readings_backup;`);
-      } catch (e) {}
+      } catch {}
 
       await database.execAsync(`
         CREATE TABLE readings (
@@ -68,7 +68,7 @@ export async function initializeDB() {
           await database.execAsync(`DROP TABLE readings_backup;`);
           console.log('Migration: data restored from backup');
         }
-      } catch (e) {
+      } catch {
         console.log('Migration: could not restore backup data');
       }
     }
@@ -76,7 +76,7 @@ export async function initializeDB() {
     let currentTableInfo;
     try {
       currentTableInfo = await database.getAllAsync('PRAGMA table_info(readings)');
-    } catch (e) {
+    } catch {
       currentTableInfo = [];
     }
 
@@ -87,9 +87,9 @@ export async function initializeDB() {
       try {
         await database.execAsync(`ALTER TABLE readings ADD COLUMN arm TEXT;`);
         console.log('Migration: arm column added');
-      } catch (e) {
-        if (!e.message?.includes('duplicate column') && !e.message?.includes('duplicate column name')) {
-          console.error('Migration error adding arm column:', e);
+      } catch (err) {
+        if (!err.message?.includes('duplicate column') && !err.message?.includes('duplicate column name')) {
+          console.error('Migration error adding arm column:', err);
         }
       }
     }

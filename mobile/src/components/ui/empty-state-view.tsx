@@ -8,8 +8,6 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { useAppColors, spacing, radius } from "@/theme";
-import { scaleFont } from "@/theme/fontScale";
-
 const PULSE_DURATION = 1200;
 
 interface EmptyStateViewProps {
@@ -32,6 +30,7 @@ export function EmptyStateView({
       2,
       true
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const buttonStyle = useAnimatedStyle(() => ({

@@ -97,7 +97,7 @@ export async function checkHealth() {
     const response = await fetch(`${await getServerUrl()}/health`);
     const data = await response.json();
     return data.status === 'ok';
-  } catch (error) {
+  } catch {
     return false;
   }
 }
