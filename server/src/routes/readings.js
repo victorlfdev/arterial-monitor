@@ -3,6 +3,24 @@ const { getDb } = require('../db/database');
 
 const router = express.Router();
 
+function sanitizeString(str) {
+  if (typeof str !== 'string') return str;
+  return str.replace(/[<>&"']/g, (char) => {
+    const escapes = { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#x27;' };
+    return escapes[char];
+  });
+}
+
+function sanitizeInput(body) {
+  return {
+    ...body,
+    symptoms: sanitizeString(body.symptoms),
+    notes: sanitizeString(body.notes),
+    medication_name: sanitizeString(body.medication_name),
+    arm: sanitizeString(body.arm),
+  };
+}
+
 async function runQuery(db, sql, params = []) {
   return new Promise((resolve, reject) => {
     db.all(sql, params, (err, rows) => {
@@ -77,7 +95,8 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const db = await getDb();
-    const { systolic, diastolic, heart_rate, medication_used, medication_name, symptoms, notes, arm } = req.body;
+    const body = sanitizeInput(req.body);
+    const { systolic, diastolic, heart_rate, medication_used, medication_name, symptoms, notes, arm } = body;
 
     if (!systolic || !diastolic || systolic < 20 || diastolic < 20) {
       return res.status(400).json({ success: false, error: 'Systolic and diastolic pressure are required and must be positive values' });
@@ -113,7 +132,8 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Reading not found' });
     }
 
-    const { systolic, diastolic, heart_rate, medication_used, medication_name, symptoms, notes, arm } = req.body;
+    const body = sanitizeInput(req.body);
+    const { systolic, diastolic, heart_rate, medication_used, medication_name, symptoms, notes, arm } = body;
     const updates = [];
     const params = [];
 
@@ -139,11 +159,13 @@ router.put('/:id', async (req, res) => {
     if (notes !== undefined) { updates.push('notes = ?'); params.push(notes); }
     if (arm !== undefined) { updates.push('arm = ?'); params.push(arm); }
 
-    if (updates.length > 0) {
-      updates.push("updated_at = datetime('now')");
-      params.push(req.params.id);
-      await db.run(`UPDATE readings SET ${updates.join(', ')} WHERE id = ?`, params);
+    if (updates.length === 0) {
+      return res.status(400).json({ success: false, error: 'No fields to update' });
     }
+
+    updates.push("updated_at = datetime('now')");
+    params.push(req.params.id);
+    await db.run(`UPDATE readings SET ${updates.join(', ')} WHERE id = ?`, params);
 
     const updatedReading = await getSingle(db, 'SELECT * FROM readings WHERE id = ?', [req.params.id]);
     res.json({ success: true, data: updatedReading });

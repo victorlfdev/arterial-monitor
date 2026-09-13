@@ -20,6 +20,7 @@ import {
 import { checkHealth } from '@/services/api';
 import { fullSync } from '@/services/sync';
 import useAppStore from '@/store/useAppStore';
+import { getServerUrl, setServerUrl, resetServerUrl } from '@/constants/server';
 
 export default function SettingsScreen() {
   const [morningHour, setMorningHour] = useState('07');
@@ -30,10 +31,20 @@ export default function SettingsScreen() {
   const [eveningEnabled, setEveningEnabled] = useState(false);
   const [connected, setConnected] = useState(true);
   const { setSyncing, setLastSync } = useAppStore();
+  const [serverUrl, setServerUrlState] = useState('');
+  const [showServerUrlInput, setShowServerUrlInput] = useState(false);
+  const [serverUrlInput, setServerUrlInput] = useState('');
 
   useEffect(() => {
     checkConnection();
+    loadServerUrl();
   }, []);
+
+  const loadServerUrl = async () => {
+    const url = await getServerUrl();
+    setServerUrlState(url);
+    setServerUrlInput(url);
+  };
 
   const checkConnection = async () => {
     const isOnline = await checkHealth();
@@ -62,6 +73,28 @@ export default function SettingsScreen() {
     await cancelAllAlarms();
     await scheduleDailyAlarm(0, 1, 'test-alarm');
     Alert.alert('Teste', 'Notificação de teste agendada para 1 minuto');
+  };
+
+  const handleSaveServerUrl = async () => {
+    try {
+      const normalized = serverUrlInput.startsWith('http') ? serverUrlInput : `http://${serverUrlInput}`;
+      await setServerUrl(normalized);
+      setServerUrlState(normalized);
+      setShowServerUrlInput(false);
+      Alert.alert('Sucesso', 'URL do servidor atualizada');
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível salvar a URL do servidor');
+    }
+  };
+
+  const handleResetServerUrl = async () => {
+    try {
+      await resetServerUrl();
+      await loadServerUrl();
+      Alert.alert('Sucesso', 'URL do servidor restaurada para o padrão');
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível resetar a URL do servidor');
+    }
   };
 
   const handleSync = async () => {
@@ -192,10 +225,43 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text type="subtitle" style={styles.sectionTitle}>
             <Ionicons name="build" size={20} />
-            {' '}Desenvolvedor
+            {' '}Servidor
           </Text>
           <Text style={styles.infoText}>URL do servidor:</Text>
-          <Text style={styles.codeText}>http://YOUR_TAILSCALE_IP:3001</Text>
+          {showServerUrlInput ? (
+            <View style={{ gap: 8 }}>
+              <TextInput
+                style={[styles.codeText, { height: 44 }]}
+                value={serverUrlInput}
+                onChangeText={setServerUrlInput}
+                placeholder="http://100.76.124.1:3001"
+              />
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: '#2196f3' }]}
+                  onPress={handleSaveServerUrl}
+                >
+                  <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>Salvar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: '#f5f5f5' }]}
+                  onPress={() => { setShowServerUrlInput(false); loadServerUrl(); }}
+                >
+                  <Text style={{ color: '#666', fontSize: 14, fontWeight: 'bold' }}>Cancelar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.actionButton} onPress={() => { setShowServerUrlInput(true); setServerUrlInput(serverUrl); }}>
+              <Ionicons name="create" size={16} color="#666" />
+              <Text style={{ color: '#666', fontSize: 14 }}>
+                {serverUrl}
+              </Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity onPress={handleResetServerUrl} style={{ marginTop: 8 }}>
+            <Text style={{ color: '#2196f3', fontSize: 13 }}>Resetar para padrão</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>

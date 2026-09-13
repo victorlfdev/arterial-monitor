@@ -3,17 +3,27 @@ import { View, Text, Modal, TouchableOpacity, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
 
 const PressureChart = ({ readings }) => {
+  const [selectedPeriod, setSelectedPeriod] = useState('24h');
+  const PERIODS = [
+    { label: '24h', hours: 24 },
+    { label: '7d', hours: 7 * 24 },
+    { label: '30d', hours: 30 * 24 },
+    { label: 'Tudo', hours: Infinity },
+  ];
+
   const chartData = useMemo(() => {
     const now = new Date();
-    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const period = PERIODS.find(p => p.label === selectedPeriod);
+    const cutoffMs = period.hours === Infinity ? 0 : period.hours * 60 * 60 * 1000;
+    const cutoffDate = cutoffMs === 0 ? new Date(0) : new Date(now.getTime() - cutoffMs);
 
     return readings
       .filter((r) => {
         const date = new Date(r.created_at);
-        return date >= twentyFourHoursAgo && date <= now;
+        return date >= cutoffDate && date <= now;
       })
       .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-  }, [readings]);
+  }, [readings, selectedPeriod]);
 
   const hasData = chartData.length > 0;
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -114,6 +124,8 @@ const PressureChart = ({ readings }) => {
     );
   };
 
+  const periodLabel = PERIODS.find(p => p.label === selectedPeriod)?.label || '24h';
+
   if (!hasData) {
     return (
       <View style={{ margin: 16, padding: 20, backgroundColor: '#fff', borderRadius: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}>
@@ -122,7 +134,7 @@ const PressureChart = ({ readings }) => {
         </Text>
         <View style={{ height: 250, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ color: '#999', textAlign: 'center' }}>
-            Nenhuma medição nas últimas 24 horas
+            Nenhuma medição nas últimas {periodLabel === 'Tudo' ? '' : periodLabel}
           </Text>
         </View>
       </View>
@@ -133,10 +145,32 @@ const PressureChart = ({ readings }) => {
 
   return (
     <View style={{ margin: 16, padding: 20, backgroundColor: '#fff', borderRadius: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <Text type="subtitle" style={{ color: '#333' }}>
           Evolução Pressão Arterial
         </Text>
+        <View style={{ flexDirection: 'row', gap: 4 }}>
+          {PERIODS.map((period) => (
+            <TouchableOpacity
+              key={period.label}
+              onPress={() => setSelectedPeriod(period.label)}
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 6,
+                backgroundColor: selectedPeriod === period.label ? '#2196f3' : '#f0f0f0',
+              }}
+            >
+              <Text style={{
+                fontSize: 12,
+                color: selectedPeriod === period.label ? '#fff' : '#666',
+                fontWeight: selectedPeriod === period.label ? 'bold' : '500',
+              }}>
+                {period.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
 
       <LineChart

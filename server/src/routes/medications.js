@@ -3,6 +3,21 @@ const { getDb } = require('../db/database');
 
 const router = express.Router();
 
+function sanitizeString(str) {
+  if (typeof str !== 'string') return str;
+  return str.replace(/[<>&"']/g, (char) => {
+    const escapes = { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#x27;' };
+    return escapes[char];
+  });
+}
+
+function sanitizeInput(body) {
+  return {
+    ...body,
+    name: sanitizeString(body.name),
+  };
+}
+
 async function runQuery(db, sql, params = []) {
   return new Promise((resolve, reject) => {
     db.all(sql, params, (err, rows) => {
@@ -46,7 +61,8 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const db = await getDb();
-    const { name } = req.body;
+    const body = sanitizeInput(req.body);
+    const { name } = body;
 
     if (!name) {
       return res.status(400).json({ success: false, error: 'Medication name is required' });
@@ -71,7 +87,7 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Medication not found' });
     }
 
-    const { name } = req.body;
+    const { name } = sanitizeInput(req.body);
 
     if (!name) {
       return res.status(400).json({ success: false, error: 'Medication name is required' });

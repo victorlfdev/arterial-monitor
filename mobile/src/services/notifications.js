@@ -13,12 +13,17 @@ export async function requestPermissions() {
 export async function scheduleDailyAlarm(hour, minute, identifier) {
   try {
     const Notifications = await import('expo-notifications');
-    const today = new Date();
-    const scheduled = new Date(today);
-    scheduled.setHours(hour, minute, 0, 0);
 
-    if (scheduled < today) {
-      scheduled.setDate(scheduled.getDate() + 1);
+    const triggerConfig = {
+      hour,
+      minute,
+    };
+
+    if (Notifications.SchedulableTriggerInputTypes?.EVERY_DAY) {
+      triggerConfig.type = Notifications.SchedulableTriggerInputTypes.EVERY_DAY;
+    } else {
+      triggerConfig.type = 'second';
+      triggerConfig.seconds = 86400;
     }
 
     await Notifications.scheduleNotificationAsync({
@@ -26,11 +31,7 @@ export async function scheduleDailyAlarm(hour, minute, identifier) {
         title: '⏰ Hora da medição!',
         body: 'Registre sua pressão arterial no app',
       },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.EVERY_DAY,
-        hour,
-        minute,
-      },
+      trigger: triggerConfig,
       identifier,
     });
   } catch {

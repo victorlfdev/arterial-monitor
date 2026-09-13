@@ -1,7 +1,7 @@
-import { SERVER_URL } from '../constants/server';
+import { getServerUrl } from '../constants/server';
 
 async function fetchAPI(endpoint, options = {}) {
-  const url = `${SERVER_URL}/api${endpoint}`;
+  const url = `${await getServerUrl()}/api${endpoint}`;
 
   const defaultOptions = {
     headers: {
@@ -80,7 +80,7 @@ export async function deleteMedication(id) {
 
 export async function checkHealth() {
   try {
-    const response = await fetch(`${SERVER_URL}/health`);
+    const response = await fetch(`${await getServerUrl()}/health`);
     const data = await response.json();
     return data.status === 'ok';
   } catch (error) {

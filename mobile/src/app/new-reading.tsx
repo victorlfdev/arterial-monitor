@@ -27,6 +27,9 @@ export default function NewReadingScreen() {
   const isEditing = params.editingId && params.editingId !== 'undefined';
   const editingId = isEditing ? parseInt(params.editingId) : null;
 
+  const parseBool = (val: unknown) => val === 1 || val === '1' || val === true || val === 'true';
+  const parseNum = (val: unknown) => (val !== undefined && val !== '' ? parseInt(String(val), 10) : NaN);
+
   const [systolic, setSystolic] = useState('');
   const [diastolic, setDiastolic] = useState('');
   const [heartRate, setHeartRate] = useState('');
@@ -40,10 +43,14 @@ export default function NewReadingScreen() {
   useEffect(() => {
     fetchMedications();
     if (isEditing && params) {
-      setSystolic(String(params.systolic ?? ''));
-      setDiastolic(String(params.diastolic ?? ''));
-      setHeartRate(String(params.heart_rate ?? ''));
-      setMedicationUsed(params.medication_used === 1 || params.medication_used === '1' || params.medication_used === true || params.medication_used === 'true');
+      const systolic = parseNum(params.systolic);
+      const diastolic = parseNum(params.diastolic);
+      const heartRate = parseNum(params.heart_rate);
+
+      setSystolic(systolic >= 0 ? String(systolic) : '');
+      setDiastolic(diastolic >= 0 ? String(diastolic) : '');
+      setHeartRate(heartRate >= 0 ? String(heartRate) : '');
+      setMedicationUsed(parseBool(params.medication_used));
       setSelectedMedication(params.medication_name?.toString() || '');
       setSelectedArm(params.arm?.toString() || '');
       setSymptoms(params.symptoms?.toString() || '');
