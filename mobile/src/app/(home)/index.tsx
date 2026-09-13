@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   StyleSheet,
   View,
@@ -7,6 +7,13 @@ import {
   RefreshControl,
   Text,
 } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
+  Easing,
+} from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import { Icon } from "@/components/ui/Icon";
 import { format, formatDistanceToNow } from "date-fns";
@@ -16,6 +23,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import useAppStore from "@/store/useAppStore";
 import { fullSync } from "@/services/sync";
 import { checkHealth, getReadingsStats } from "@/services/api";
+import { classifyPressure } from "@/lib/bpClassification";
 import { ReadingCard } from "@/components/ui/reading-card";
 import { StatsPanel } from "@/components/ui/stats-panel";
 import { Chip } from "@/components/ui/chip";
@@ -23,6 +31,8 @@ import { FeatureCard } from "@/components/ui/feature-card";
 import { colors, spacing, radius, shadows } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 import PressureChart from "@/components/PressureChart";
+import { HomeLoadingView } from "@/components/ui/home-loading-view";
+import { EmptyStateView } from "@/components/ui/empty-state-view";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -43,6 +53,9 @@ export default function HomeScreen() {
   const [medicationFilter, setMedicationFilter] = useState("all");
   const [armFilter, setArmFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date_desc");
+  const [initialLoading, setInitialLoading] = useState(true);
+  const loadedRef = useRef(false);
+  const [triggerLoad, setTriggerLoad] = useState(0);
 
   const s = useMemo(() => {
     const fs = (base: number) => scaleFont(base, fontScale);
@@ -58,7 +71,6 @@ export default function HomeScreen() {
       stubTitle: { fontSize: fs(14), fontWeight: "600" as const, color: colors.label },
       stubEmoji: { fontSize: fs(36), marginVertical: spacing.sm },
       stubDesc: { fontSize: fs(12), color: colors.tertiaryLabel },
-      emptyText: { fontSize: fs(15), color: colors.tertiaryLabel, textAlign: "center", paddingVertical: spacing.xxl },
     });
   }, [fontScale]);
 
@@ -86,6 +98,19 @@ export default function HomeScreen() {
     }, 0);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (readings.length > 0 && !loadedRef.current) {
+      loadedRef.current = true;
+      setInitialLoading(false);
+      setTriggerLoad((prev) => prev + 1);
+    } else if (readings.length === 0 && !loadedRef.current) {
+      const timer = setTimeout(() => {
+        setInitialLoading(false);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [readings]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -116,10 +141,12 @@ export default function HomeScreen() {
   const filtered = readings
     .filter((r) => {
       if (filter === "medicated") return r.medication_used === 1;
+      if (filter === "elevated")
+        return classifyPressure(r.systolic, r.diastolic).key === "elevated";
       if (filter === "high")
-        return r.systolic >= 140 || r.diastolic >= 90;
+        return classifyPressure(r.systolic, r.diastolic).key.startsWith("high");
       if (filter === "normal")
-        return r.systolic < 120 && r.diastolic < 80;
+        return classifyPressure(r.systolic, r.diastolic).key === "normal";
       return true;
     })
     .filter(
@@ -158,6 +185,40 @@ export default function HomeScreen() {
     }
   };
 
+  const CARD_ANIM_DURATION = 300;
+  const CARD_ANIM_EASING = Easing.bezier(0.16, 1, 0.3, 1);
+
+  function ReadingCardAnimated({
+    index,
+    ...cardProps
+  }: { index: number } & React.ComponentProps<typeof ReadingCard>) {
+    const opacity = useSharedValue(0);
+    const translateY = useSharedValue(16);
+
+    useEffect(() => {
+      const delay = index * 60;
+      opacity.value = withDelay(
+        delay,
+        withTiming(1, { duration: CARD_ANIM_DURATION }, () => {})
+      );
+      translateY.value = withDelay(
+        delay,
+        withTiming(0, { duration: CARD_ANIM_DURATION, easing: CARD_ANIM_EASING }, () => {})
+      );
+    }, [triggerLoad, index]);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+      opacity: opacity.value,
+      transform: [{ translateY: translateY.value }],
+    }));
+
+    return (
+      <Animated.View style={[styles.animatedCard, animatedStyle]}>
+        <ReadingCard {...cardProps} />
+      </Animated.View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView
@@ -172,285 +233,303 @@ export default function HomeScreen() {
           />
         }
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <View>
-              <Text style={s.headerTitle}>Pressão Arterial</Text>
-              <View style={styles.statusRow}>
-                <View
-                  style={[
-                    styles.statusDot,
-                    { backgroundColor: connected ? colors.systemGreen : colors.systemRed },
-                  ]}
-                />
-                <Text style={s.statusText}>
-                  {connected ? "Conectado" : "Offline"}
-                </Text>
+        {!initialLoading && (
+          <>
+            {/* Header */}
+            <View style={styles.header}>
+              <View style={styles.headerTop}>
+                <View>
+                  <Text style={s.headerTitle}>Pressão Arterial</Text>
+                  <View style={styles.statusRow}>
+                    <View
+                      style={[
+                        styles.statusDot,
+                        { backgroundColor: connected ? colors.systemGreen : colors.systemRed },
+                      ]}
+                    />
+                    <Text style={s.statusText}>
+                      {connected ? "Conectado" : "Offline"}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.headerActions}>
+                  <TouchableOpacity
+                    style={styles.headerBtn}
+                    onPress={() => router.push("/history")}
+                    accessibilityRole="button"
+                    accessibilityLabel="Ver histórico de medições"
+                  >
+                    <Icon name="time" size={18} color={colors.onTint} />
+                    <Text style={s.headerBtnText}>Histórico</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.headerBtn, styles.newBtn]}
+                    onPress={() => router.push("/new-reading")}
+                    accessibilityRole="button"
+                    accessibilityLabel="Registrar nova medição"
+                  >
+                    <Icon name="add" size={18} color={colors.onTint} />
+                    <Text style={s.headerBtnText}>Nova Medição</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-            <View style={styles.headerActions}>
-              <TouchableOpacity
-                style={styles.headerBtn}
-                onPress={() => router.push("/history")}
-                accessibilityRole="button"
-                accessibilityLabel="Ver histórico de medições"
-              >
-                <Icon name="time" size={18} color={colors.onTint} />
-                <Text style={s.headerBtnText}>Histórico</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.headerBtn, styles.newBtn]}
-                onPress={() => router.push("/new-reading")}
-                accessibilityRole="button"
-                accessibilityLabel="Registrar nova medição"
-              >
-                <Icon name="add" size={18} color={colors.onTint} />
-                <Text style={s.headerBtnText}>Nova Medição</Text>
-              </TouchableOpacity>
+
+            {/* Quick Actions */}
+            <View style={styles.quickActions}>
+              <FeatureCard
+                icon="trophy"
+                title="Conquistas"
+                subtitle="Em breve"
+                color="#ffc107"
+                onPress={() => router.push("/conquistas")}
+              />
+              <FeatureCard
+                icon="flag"
+                title="Desafios"
+                subtitle="Em breve"
+                color={colors.systemGreen}
+                onPress={() => router.push("/desafios")}
+              />
+              <FeatureCard
+                icon="people"
+                title="Amigos"
+                subtitle="Em breve"
+                color={colors.systemBlue}
+                onPress={() => router.push("/amigos")}
+              />
+              <FeatureCard
+                icon="document-text"
+                title="Relatórios"
+                subtitle="Em breve"
+                color={colors.systemPurple}
+                onPress={() => router.push("/relatorios")}
+              />
             </View>
-          </View>
-        </View>
 
-        {/* Quick Actions */}
-        <View style={styles.quickActions}>
-          <FeatureCard
-            icon="trophy"
-            title="Conquistas"
-            subtitle="Em breve"
-            color="#ffc107"
-            onPress={() => router.push("/conquistas")}
-          />
-          <FeatureCard
-            icon="flag"
-            title="Desafios"
-            subtitle="Em breve"
-            color={colors.systemGreen}
-            onPress={() => router.push("/desafios")}
-          />
-          <FeatureCard
-            icon="people"
-            title="Amigos"
-            subtitle="Em breve"
-            color={colors.systemBlue}
-            onPress={() => router.push("/amigos")}
-          />
-          <FeatureCard
-            icon="document-text"
-            title="Relatórios"
-            subtitle="Em breve"
-            color={colors.systemPurple}
-            onPress={() => router.push("/relatorios")}
-          />
-        </View>
+            {/* Stats */}
+            {stats && (
+              <StatsPanel stats={stats} collapsed={!showStats} onToggle={() => setShowStats(!showStats)} />
+            )}
 
-        {/* Stats */}
-        {stats && (
-          <StatsPanel stats={stats} collapsed={!showStats} onToggle={() => setShowStats(!showStats)} />
-        )}
-
-        {/* Filters */}
-        {filtered.length > 0 && (
-          <View style={styles.filterSection}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.filterScroll}
-            >
-              {[
-                { key: "all", label: "Todas" },
-                { key: "medicated", label: "Medicada" },
-                { key: "high", label: "Alta" },
-                { key: "normal", label: "Normal" },
-              ].map((f) => (
-                <Chip
-                  key={f.key}
-                  label={f.label}
-                  active={filter === f.key}
-                  onPress={() => setFilter(f.key)}
-                />
-              ))}
-            </ScrollView>
-          </View>
-        )}
-
-        {uniqueMeds.length > 0 && (
-          <View style={styles.filterSection}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.filterScroll}
-            >
-              <Chip
-                label="Todos remédios"
-                active={medicationFilter === "all"}
-                onPress={() => setMedicationFilter("all")}
-              />
-              {uniqueMeds.map((m) => (
-                <Chip
-                  key={m}
-                  label={m}
-                  active={medicationFilter === m}
-                  onPress={() => setMedicationFilter(m)}
-                />
-              ))}
-            </ScrollView>
-          </View>
-        )}
-
-        {uniqueArms.length > 0 && (
-          <View style={styles.filterSection}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.filterScroll}
-            >
-              <Chip
-                label="Todos braços"
-                active={armFilter === "all"}
-                onPress={() => setArmFilter("all")}
-              />
-              {uniqueArms.map((a) => (
-                <Chip
-                  key={a}
-                  label={a === "left" ? "Esquerdo" : a === "right" ? "Direito" : a}
-                  active={armFilter === a}
-                  onPress={() => setArmFilter(a)}
-                />
-              ))}
-            </ScrollView>
-          </View>
-        )}
-
-        <View style={styles.filterSection}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterScroll}
-          >
-            {[
-              { key: "date_desc", label: "Recentes" },
-              { key: "date_asc", label: "Antigas" },
-              { key: "sys_desc", label: "Sist ↓" },
-              { key: "sys_asc", label: "Sist ↑" },
-              { key: "dia_desc", label: "Dia ↓" },
-              { key: "dia_asc", label: "Dia ↑" },
-            ].map((o) => (
-              <Chip
-                key={o.key}
-                label={o.label}
-                active={sortBy === o.key}
-                onPress={() => setSortBy(o.key)}
-              />
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Last Reading */}
-        {last && (
-          <View style={styles.lastReadingSection}>
-            <Text style={s.sectionHeader}>Última medição</Text>
-            <View style={styles.lastCard}>
-              <View style={styles.lastPressure}>
-                <Text
-                  style={[
-                    s.lastPressureValue,
-                    {
-                      color:
-                        last.systolic < 120 && last.diastolic < 80
-                          ? colors.pressureNormal
-                          : last.systolic < 140 || last.diastolic < 90
-                            ? colors.pressureElevated
-                            : colors.pressureHigh,
-                    },
-                  ]}
+            {/* Filters */}
+            {filtered.length > 0 && (
+              <View style={styles.filterSection}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.filterScroll}
                 >
-                  {last.systolic}/{last.diastolic}
-                </Text>
-                <Text style={s.unit}>mmHg</Text>
+                  {[
+                    { key: "all", label: "Todas" },
+                    { key: "elevated", label: "Elevada" },
+                    { key: "high", label: "Alta" },
+                    { key: "normal", label: "Normal" },
+                  ].map((f) => (
+                    <Chip
+                      key={f.key}
+                      label={f.label}
+                      active={filter === f.key}
+                      onPress={() => setFilter(f.key)}
+                    />
+                  ))}
+                </ScrollView>
               </View>
-              <View style={styles.lastInfo}>
-                {last.heart_rate && (
-                  <View style={styles.infoRow}>
-                    <Icon name="heart" size={18} color={colors.systemPink} />
-                    <Text style={s.infoText}>{last.heart_rate} bpm</Text>
-                  </View>
-                )}
-                {last.medication_name && (
-                  <View style={styles.infoRow}>
-                    <Icon name="medkit" size={18} color={colors.systemBlue} />
-                    <Text style={s.infoText}>{last.medication_name}</Text>
-                  </View>
-                )}
-                <Text style={s.timestamp}>{formatDateFull(last.created_at)}</Text>
-              </View>
-            </View>
-          </View>
-        )}
+            )}
 
-        {/* Chart */}
-        {readings.length > 0 && <PressureChart readings={readings} />}
+            {uniqueMeds.length > 0 && (
+              <View style={styles.filterSection}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.filterScroll}
+                >
+                  <Chip
+                    label="Todos remédios"
+                    active={medicationFilter === "all"}
+                    onPress={() => setMedicationFilter("all")}
+                  />
+                  {uniqueMeds.map((m) => (
+                    <Chip
+                      key={m}
+                      label={m}
+                      active={medicationFilter === m}
+                      onPress={() => setMedicationFilter(m)}
+                    />
+                  ))}
+                </ScrollView>
+              </View>
+            )}
 
-        {/* Stubs */}
-        {readings.length > 0 && (
-          <View style={styles.stubsSection}>
-            <View style={styles.stubCard}>
-              <View style={styles.stubHeader}>
-                <Icon name="flash" size={22} color={colors.systemOrange} />
-              <Text style={s.stubTitle}>Sequência Ativa</Text>
+            {uniqueArms.length > 0 && (
+              <View style={styles.filterSection}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.filterScroll}
+                >
+                  <Chip
+                    label="Todos braços"
+                    active={armFilter === "all"}
+                    onPress={() => setArmFilter("all")}
+                  />
+                  {uniqueArms.map((a) => (
+                    <Chip
+                      key={a}
+                      label={a === "left" ? "Esquerdo" : a === "right" ? "Direito" : a}
+                      active={armFilter === a}
+                      onPress={() => setArmFilter(a)}
+                    />
+                  ))}
+                </ScrollView>
               </View>
-              <Text style={styles.stubEmoji}>🔥</Text>
-              <Text style={styles.stubDesc}>
-                Mantenha sua sequência!
-              </Text>
+            )}
+
+            <View style={styles.filterSection}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.filterScroll}
+              >
+                {[
+                  { key: "date_desc", label: "Recentes" },
+                  { key: "date_asc", label: "Antigas" },
+                  { key: "sys_desc", label: "Sist ↓" },
+                  { key: "sys_asc", label: "Sist ↑" },
+                  { key: "dia_desc", label: "Dia ↓" },
+                  { key: "dia_asc", label: "Dia ↑" },
+                ].map((o) => (
+                  <Chip
+                    key={o.key}
+                    label={o.label}
+                    active={sortBy === o.key}
+                    onPress={() => setSortBy(o.key)}
+                  />
+                ))}
+              </ScrollView>
             </View>
-            <View style={styles.stubCard}>
-              <View style={styles.stubHeader}>
-                <Icon name="people" size={22} color={colors.systemGreen} />
-              <Text style={s.stubTitle}>Rede de Apoio</Text>
+
+            {/* Last Reading */}
+            {last && (
+              <View style={styles.lastReadingSection}>
+                <Text style={s.sectionHeader}>Última medição</Text>
+                <View style={styles.lastCard}>
+                  <View style={styles.lastPressure}>
+                    <Text
+                      style={[
+                        s.lastPressureValue,
+                        {
+                          color: (() => {
+                            const cat = classifyPressure(last.systolic, last.diastolic);
+                            if (cat.key === "normal") return colors.pressureNormal;
+                            if (cat.key === "elevated") return colors.pressureElevated;
+                            return colors.pressureHigh;
+                          })(),
+                        },
+                      ]}
+                    >
+                      {last.systolic}/{last.diastolic}
+                    </Text>
+                    <Text style={s.unit}>mmHg</Text>
+                  </View>
+                  <View style={styles.lastInfo}>
+                    {last.heart_rate && (
+                      <View style={styles.infoRow}>
+                        <Icon name="heart" size={18} color={colors.systemPink} />
+                        <Text style={s.infoText}>{last.heart_rate} bpm</Text>
+                      </View>
+                    )}
+                    {last.medication_name && (
+                      <View style={styles.infoRow}>
+                        <Icon name="medkit" size={18} color={colors.systemBlue} />
+                        <Text style={s.infoText}>{last.medication_name}</Text>
+                      </View>
+                    )}
+                    <Text style={s.timestamp}>{formatDateFull(last.created_at)}</Text>
+                  </View>
+                </View>
               </View>
-              <Text style={styles.stubEmoji}>👥</Text>
-              <Text style={styles.stubDesc}>
-                Convide amigos e familiares
-              </Text>
-            </View>
-          </View>
+            )}
+
+            {/* Chart */}
+            {readings.length > 0 && <PressureChart readings={readings} />}
+
+            {/* Stubs */}
+            {readings.length > 0 && (
+              <View style={styles.stubsSection}>
+                <View style={styles.stubCard}>
+                  <View style={styles.stubHeader}>
+                    <Icon name="flash" size={22} color={colors.systemOrange} />
+                    <Text style={s.stubTitle}>Sequência Ativa</Text>
+                  </View>
+                  <Text style={styles.stubEmoji}>🔥</Text>
+                  <Text style={styles.stubDesc}>
+                    Mantenha sua sequência!
+                  </Text>
+                </View>
+                <View style={styles.stubCard}>
+                  <View style={styles.stubHeader}>
+                    <Icon name="people" size={22} color={colors.systemGreen} />
+                    <Text style={s.stubTitle}>Rede de Apoio</Text>
+                  </View>
+                  <Text style={styles.stubEmoji}>👥</Text>
+                  <Text style={styles.stubDesc}>
+                    Convide amigos e familiares
+                  </Text>
+                </View>
+              </View>
+            )}
+          </>
         )}
 
         {/* History List */}
-        <View style={styles.historySection}>
+        {readings.length === 0 && !initialLoading && (
+          <View style={styles.historySection}>
             <Text style={s.sectionHeader}>Histórico</Text>
-          {filtered.length > 0 ? (
-            filtered.map((r) => (
-              <ReadingCard
-                key={r.id}
-                systolic={r.systolic}
-                diastolic={r.diastolic}
-                heartRate={r.heart_rate || undefined}
-                timestamp={formatDateShort(r.created_at)}
-                medicationName={r.medication_name || undefined}
-                symptoms={r.symptoms || undefined}
-                arm={r.arm || undefined}
-                onPress={() =>
-                  router.push({
-                    pathname: "/new-reading",
-                    params: { editingId: r.id, ...r },
-                  })
-                }
-                showActions
-                onEdit={() =>
-                  router.push({
-                    pathname: "/new-reading",
-                    params: { editingId: r.id, ...r },
-                  })
-                }
-                onDelete={() => handleDelete(r.id, r.server_id || undefined)}
-              />
-            ))
-          ) : (
-            <Text style={styles.emptyText}>Nenhuma medição encontrada</Text>
-          )}
-        </View>
+            <EmptyStateView
+              onPrimaryAction={() => router.push("/new-reading")}
+              primaryActionLabel="Registrar primeira medição"
+              emptyType="no-readings"
+            />
+          </View>
+        )}
+
+        {readings.length > 0 && !initialLoading && (
+          <View style={styles.historySection}>
+            <Text style={s.sectionHeader}>Histórico</Text>
+            {filtered.length > 0 ? (
+              filtered.map((r, i) => (
+                <ReadingCardAnimated
+                  key={r.id}
+                  index={i}
+                  systolic={r.systolic}
+                  diastolic={r.diastolic}
+                  heartRate={r.heart_rate || undefined}
+                  timestamp={formatDateShort(r.created_at)}
+                  medicationName={r.medication_name || undefined}
+                  symptoms={r.symptoms || undefined}
+                  arm={r.arm || undefined}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/new-reading",
+                      params: { editingId: r.id, ...r },
+                    })
+                  }
+                  showActions
+                  onEdit={() =>
+                    router.push({
+                      pathname: "/new-reading",
+                      params: { editingId: r.id, ...r },
+                    })
+                  }
+                  onDelete={() => handleDelete(r.id, r.server_id || undefined)}
+                />
+              ))
+            ) : (
+              <EmptyStateView emptyType="no-filters" />
+            )}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -604,9 +683,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
-  emptyText: {
-    color: colors.tertiaryLabel,
-    textAlign: "center",
-    paddingVertical: spacing.xxl,
+  animatedCard: {
+    marginBottom: spacing.sm,
   },
 });

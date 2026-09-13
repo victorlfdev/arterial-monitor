@@ -5,7 +5,7 @@ import { useFontScale, scaleFont } from "@/theme/fontScale";
 
 interface BadgeProps extends ViewProps {
   label: string;
-  color?: "normal" | "elevated" | "high" | "blue" | "green" | "orange" | "red" | "gray";
+  color?: "normal" | "elevated" | "high" | "blue" | "green" | "orange" | "red" | "darkred" | "gray";
   size?: "sm" | "md";
 }
 
@@ -17,6 +17,7 @@ const colorMap = {
   green: colors.systemGreen,
   orange: colors.systemOrange,
   red: colors.systemRed,
+  darkred: colors.pressureHigh,
   gray: colors.separator,
 } as const;
 

@@ -4,9 +4,15 @@ import { Color } from 'expo-router';
 
 export default function HomeStackLayout() {
   const headerBg = Platform.select({
-    ios: Color.ios.systemBlue,
-    android: Color.android.dynamic.primary,
-    default: '#007aff',
+    ios: Color.ios.systemBackground,
+    android: Color.android.dynamic.surface,
+    default: '#ffffff',
+  });
+
+  const headerTint = Platform.select({
+    ios: Color.ios.label,
+    android: Color.android.dynamic.onSurface,
+    default: '#000000',
   });
 
   return (
@@ -15,7 +21,7 @@ export default function HomeStackLayout() {
         headerStyle: {
           backgroundColor: headerBg as string,
         },
-        headerTintColor: '#fff',
+        headerTintColor: headerTint as string,
         headerTitleStyle: {
           fontWeight: '600' as const,
         },

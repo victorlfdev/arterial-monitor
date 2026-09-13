@@ -4,6 +4,7 @@ import { Icon } from "./Icon";
 import { colors, spacing, radius, shadows } from "@/theme";
 import { Badge } from "./badge";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
+import { classifyPressure } from "@/lib/bpClassification";
 
 interface ReadingCardProps extends ViewProps {
   systolic: number;
@@ -18,12 +19,6 @@ interface ReadingCardProps extends ViewProps {
   onEdit?: () => void;
   onDelete?: () => void;
 }
-
-const getPressureCategory = (sys: number, dia: number) => {
-  if (sys < 120 && dia < 80) return { label: "Normal", color: "green" as const };
-  if (sys < 140 || dia < 90) return { label: "Elevada", color: "orange" as const };
-  return { label: "Alta", color: "red" as const };
-};
 
 export function ReadingCard({
   systolic,
@@ -40,7 +35,7 @@ export function ReadingCard({
   style,
 }: ReadingCardProps) {
   const fontScale = useFontScale();
-  const cat = getPressureCategory(systolic, diastolic);
+  const cat = classifyPressure(systolic, diastolic);
   const pressureColor =
     cat.color === "green"
       ? colors.pressureNormal
