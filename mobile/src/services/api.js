@@ -23,11 +23,25 @@ async function fetchAPI(endpoint, options = {}) {
   }
 }
 
-export async function getReadings(since, limit = 100) {
-  const params = new URLSearchParams({ limit });
+export async function getReadings(since, limit = 100, filters = {}) {
+  const params = new URLSearchParams({ limit: String(limit) });
   if (since) params.append('since', since);
+  if (filters.medication_name) params.append('medication_name', filters.medication_name);
+  if (filters.arm) params.append('arm', filters.arm);
+  if (filters.date_from) params.append('date_from', filters.date_from);
+  if (filters.date_to) params.append('date_to', filters.date_to);
+  if (filters.pressure_order) params.append('pressure_order', filters.pressure_order);
 
   return fetchAPI(`/readings?${params.toString()}`);
+}
+
+export async function getReadingsStats(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters.date_from) params.append('date_from', filters.date_from);
+  if (filters.date_to) params.append('date_to', filters.date_to);
+
+  const queryString = params.toString();
+  return fetchAPI(`/readings/stats${queryString ? `?${queryString}` : ''}`);
 }
 
 export async function getReading(id) {

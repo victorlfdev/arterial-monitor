@@ -17,7 +17,7 @@ import { ptBR } from 'date-fns/locale';
 
 import useAppStore from '@/store/useAppStore';
 import { fullSync } from '@/services/sync';
-import { checkHealth } from '@/services/api';
+import { checkHealth, getReadingsStats } from '@/services/api';
 import PressureChart from '@/components/PressureChart';
 
 export default function HomeScreen() {
@@ -27,11 +27,28 @@ export default function HomeScreen() {
   const [connected, setConnected] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedReading, setSelectedReading] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [showStats, setShowStats] = useState(false);
+  const [filter, setFilter] = useState('all');
+  const [medicationFilter, setMedicationFilter] = useState('all');
+  const [armFilter, setArmFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('date_desc');
 
   useEffect(() => {
     fetchReadings();
     fetchMedications();
     checkConnection();
+    const fetchStats = async () => {
+      try {
+        const result = await getReadingsStats();
+        if (result.success) {
+          setStats(result.data);
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+    fetchStats();
   }, []);
 
   const checkConnection = async () => {
@@ -119,6 +136,34 @@ export default function HomeScreen() {
     }
   };
 
+  const uniqueMedications = [...new Set(readings.map(r => r.medication_name).filter(Boolean))];
+  const uniqueArms = [...new Set(readings.map(r => r.arm).filter(Boolean))];
+
+  const filteredReadings = readings
+    .filter((reading) => {
+      if (filter === 'medicated') return reading.medication_used === 1;
+      if (filter === 'high') return reading.systolic >= 140 || reading.diastolic >= 90;
+      if (filter === 'normal') return reading.systolic < 120 && reading.diastolic < 80;
+      return true;
+    })
+    .filter((reading) => {
+      if (medicationFilter !== 'all') return reading.medication_name === medicationFilter;
+      return true;
+    })
+    .filter((reading) => {
+      if (armFilter !== 'all') return reading.arm === armFilter;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'date_desc') return new Date(b.created_at) - new Date(a.created_at);
+      if (sortBy === 'date_asc') return new Date(a.created_at) - new Date(b.created_at);
+      if (sortBy === 'sys_desc') return b.systolic - a.systolic;
+      if (sortBy === 'sys_asc') return a.systolic - b.systolic;
+      if (sortBy === 'dia_desc') return b.diastolic - a.diastolic;
+      if (sortBy === 'dia_asc') return a.diastolic - b.diastolic;
+      return 0;
+    });
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
@@ -174,6 +219,116 @@ export default function HomeScreen() {
             <Text style={styles.actionLabel}>Relatórios</Text>
             <Text style={styles.actionSublabel}>Em breve</Text>
           </TouchableOpacity>
+        </View>
+
+        {stats && (
+          <View style={styles.statsPanel}>
+            <TouchableOpacity style={styles.statsPanelToggle} onPress={() => setShowStats(!showStats)}>
+              <Ionicons name={showStats ? 'chevron-down' : 'chevron-up'} size={20} color="#333" />
+              <Text style={styles.statsPanelTitle}>Estatísticas</Text>
+            </TouchableOpacity>
+            {showStats && (
+              <View style={styles.statsPanelContent}>
+                <View style={styles.statsPanelRow}>
+                  <View style={styles.statsPanelItem}>
+                    <Text style={styles.statsPanelValue}>{stats.count}</Text>
+                    <Text style={styles.statsPanelLabel}>Medições</Text>
+                  </View>
+                  <View style={styles.statsPanelItem}>
+                    <Text style={styles.statsPanelValue}>{stats.systolic.avg || '—'}</Text>
+                    <Text style={styles.statsPanelLabel}>Sistólica Média</Text>
+                  </View>
+                  <View style={styles.statsPanelItem}>
+                    <Text style={styles.statsPanelValue}>{stats.diastolic.avg || '—'}</Text>
+                    <Text style={styles.statsPanelLabel}>Diastólica Média</Text>
+                  </View>
+                </View>
+                <View style={styles.statsPanelRow}>
+                  <View style={styles.statsPanelItem}>
+                    <Text style={styles.statsPanelValueSmall}>{stats.systolic.min} - {stats.systolic.max}</Text>
+                    <Text style={styles.statsPanelLabel}>Sistólica (min - máx)</Text>
+                  </View>
+                  <View style={styles.statsPanelItem}>
+                    <Text style={styles.statsPanelValueSmall}>{stats.diastolic.min} - {stats.diastolic.max}</Text>
+                    <Text style={styles.statsPanelLabel}>Diastólica (min - máx)</Text>
+                  </View>
+                  <View style={styles.statsPanelItem}>
+                    <Text style={styles.statsPanelValueSmall}>{stats.heart_rate.avg || '—'}</Text>
+                    <Text style={styles.statsPanelLabel}>FC Média</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+          </View>
+        )}
+
+        <View style={styles.filterBar}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterBarContent}>
+            {['all', 'medicated', 'high', 'normal'].map((f) => (
+              <TouchableOpacity key={f} style={[styles.filterChip, filter === f && styles.filterChipActive]} onPress={() => setFilter(f)}>
+                <Text style={[styles.filterChipText, filter === f && styles.filterChipTextActive]}>
+                  {f === 'all' ? 'Todas' : f === 'medicated' ? 'Medicada' : f === 'high' ? 'Alta' : 'Normal'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {uniqueMedications.length > 0 && (
+          <View style={styles.filterBar}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterBarContent}>
+              <TouchableOpacity style={[styles.filterChip, medicationFilter === 'all' && styles.filterChipActive]} onPress={() => setMedicationFilter('all')}>
+                <Text style={[styles.filterChipText, medicationFilter === 'all' && styles.filterChipTextActive]}>
+                  Todos os medicamentos
+                </Text>
+              </TouchableOpacity>
+              {uniqueMedications.map((med) => (
+                <TouchableOpacity key={med} style={[styles.filterChip, medicationFilter === med && styles.filterChipActive]} onPress={() => setMedicationFilter(med)}>
+                  <Text style={[styles.filterChipText, medicationFilter === med && styles.filterChipTextActive]}>
+                    {med}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {uniqueArms.length > 0 && (
+          <View style={styles.filterBar}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterBarContent}>
+              <TouchableOpacity style={[styles.filterChip, armFilter === 'all' && styles.filterChipActive]} onPress={() => setArmFilter('all')}>
+                <Text style={[styles.filterChipText, armFilter === 'all' && styles.filterChipTextActive]}>
+                  Todos os braços
+                </Text>
+              </TouchableOpacity>
+              {uniqueArms.map((arm) => (
+                <TouchableOpacity key={arm} style={[styles.filterChip, armFilter === arm && styles.filterChipActive]} onPress={() => setArmFilter(arm)}>
+                  <Text style={[styles.filterChipText, armFilter === arm && styles.filterChipTextActive]}>
+                    {arm === 'left' ? 'Esquerdo' : arm === 'right' ? 'Direito' : arm}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        <View style={styles.filterBar}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterBarContent}>
+            {[
+              { key: 'date_desc', label: 'Recentes' },
+              { key: 'date_asc', label: 'Antigas' },
+              { key: 'sys_desc', label: 'Sist ↓' },
+              { key: 'sys_asc', label: 'Sist ↑' },
+              { key: 'dia_desc', label: 'Dia ↓' },
+              { key: 'dia_asc', label: 'Dia ↑' },
+            ].map((option) => (
+              <TouchableOpacity key={option.key} style={[styles.filterChip, sortBy === option.key && styles.filterChipActive]} onPress={() => setSortBy(option.key)}>
+                <Text style={[styles.filterChipText, sortBy === option.key && styles.filterChipTextActive]}>
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
         {lastReading ? (
@@ -246,8 +401,8 @@ export default function HomeScreen() {
         <View style={styles.statsCard}>
           <Text style={styles.statsTitle}>Histórico de Medições</Text>
           
-          {readings.length > 0 ? (
-            readings.map((reading) => (
+          {filteredReadings.length > 0 ? (
+            filteredReadings.map((reading) => (
               <TouchableOpacity
                 key={reading.id}
                 style={styles.historyItem}
@@ -295,7 +450,7 @@ export default function HomeScreen() {
             ))
           ) : (
             <Text style={styles.emptyHistoryText}>
-              Nenhuma medição registrada
+              Nenhuma medição encontrada
             </Text>
           )}
         </View>
@@ -449,6 +604,83 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     padding: 16,
     gap: 10,
+  },
+  statsPanel: {
+    margin: 16,
+    marginTop: 0,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  statsPanelToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statsPanelTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  statsPanelContent: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  statsPanelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 8,
+  },
+  statsPanelItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statsPanelValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2196f3',
+  },
+  statsPanelValueSmall: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+  },
+  statsPanelLabel: {
+    fontSize: 11,
+    color: '#666',
+    marginTop: 2,
+  },
+  filterBar: {
+    padding: 16,
+    paddingTop: 4,
+  },
+  filterBarContent: {
+    paddingRight: 16,
+  },
+  filterChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#e0e0e0',
+    marginRight: 8,
+  },
+  filterChipActive: {
+    backgroundColor: '#2196f3',
+  },
+  filterChipText: {
+    fontSize: 13,
+    color: '#666',
+  },
+  filterChipTextActive: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   actionCard: {
     flex: 1,
