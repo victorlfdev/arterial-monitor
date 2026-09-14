@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { View, Text, ViewProps, StyleSheet } from "react-native";
+import { View, Text, ViewProps, StyleSheet, useColorScheme } from "react-native";
 import { useAppColors, spacing } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
@@ -12,9 +12,10 @@ export function Section({ title, children, style, ...rest }: SectionProps) {
   const colors = useAppColors();
   const fontScale = useFontScale();
   const titleSize = useMemo(() => scaleFont(15, fontScale), [fontScale]);
+  const isDark = useColorScheme() === "dark";
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.systemBackground }, style]} {...rest}>
+    <View style={[styles.container, { backgroundColor: isDark ? colors.tertiarySystemBackground : colors.systemBackground }, style]} {...rest}>
       <Text style={[styles.title, { fontSize: titleSize, color: colors.secondaryLabel }]}>{title}</Text>
       <View style={styles.content}>{children}</View>
     </View>

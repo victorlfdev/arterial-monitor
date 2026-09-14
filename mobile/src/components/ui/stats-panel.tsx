@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, useColorScheme } from "react-native";
 import { Icon } from "./Icon";
 import { useAppColors, spacing, radius } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
@@ -19,9 +19,10 @@ export function StatsPanel({ stats, collapsed, onToggle }: StatsPanelProps) {
   const colors = useAppColors();
   const fontScale = useFontScale();
   const fs = (base: number) => scaleFont(base, fontScale);
+  const isDark = useColorScheme() === "dark";
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.systemBackground }]}>
+    <View style={[styles.container, { backgroundColor: isDark ? colors.tertiarySystemBackground : colors.systemBackground }]}>
       <TouchableOpacity
         style={styles.header}
         onPress={onToggle}

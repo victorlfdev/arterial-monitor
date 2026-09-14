@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ViewProps, StyleSheet } from "react-native";
+import { View, ViewProps, StyleSheet, useColorScheme } from "react-native";
 import { useAppColors, spacing, radius, shadows } from "@/theme";
 
 interface CardProps extends ViewProps {
@@ -9,12 +9,14 @@ interface CardProps extends ViewProps {
 
 export function Card({ children, style, variant = "elevated", ...rest }: CardProps) {
   const colors = useAppColors();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   return (
     <View
       style={[
         styles.card,
         variant === "elevated" && {
-          backgroundColor: colors.systemBackground,
+          backgroundColor: isDark ? colors.tertiarySystemBackground : colors.systemBackground,
           borderRadius: radius.lg,
           ...shadows.card,
         },

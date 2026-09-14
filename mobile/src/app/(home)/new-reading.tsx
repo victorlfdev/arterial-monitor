@@ -367,7 +367,7 @@ export default function NewReadingScreen() {
 const createStyles = (c: ReturnType<typeof useAppColors>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: c.systemBackground,
   },
   scrollView: {
     flex: 1,

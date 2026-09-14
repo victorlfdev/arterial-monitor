@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { TextInput, TextInputProps, View, Text, StyleSheet } from "react-native";
+import { TextInput, TextInputProps, View, Text, StyleSheet, useColorScheme } from "react-native";
 import { useAppColors, spacing, radius } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
@@ -17,6 +17,7 @@ export function Input({ label, placeholder, suffix, error, style, ...rest }: Inp
   const inputSize = useMemo(() => scaleFont(16, fontScale), [fontScale]);
   const suffixSize = useMemo(() => scaleFont(14, fontScale), [fontScale]);
   const errorSize = useMemo(() => scaleFont(13, fontScale), [fontScale]);
+  const isDark = useColorScheme() === "dark";
 
   return (
     <View style={styles.container}>
@@ -25,7 +26,7 @@ export function Input({ label, placeholder, suffix, error, style, ...rest }: Inp
         style={[
           styles.inputContainer,
           {
-            backgroundColor: colors.systemBackground,
+            backgroundColor: isDark ? colors.tertiarySystemBackground : colors.systemBackground,
             borderColor: colors.separator,
           },
           error && { borderColor: colors.systemRed },

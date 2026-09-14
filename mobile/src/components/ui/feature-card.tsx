@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, useColorScheme } from "react-native";
 import { Icon } from "./Icon";
 import { useAppColors, spacing, radius, shadowCard } from "@/theme";
 import { type } from "@/theme/typography";
@@ -20,10 +20,11 @@ export function FeatureCard({ icon, title, subtitle, color, onPress, comingSoon 
   const titleSize = useMemo(() => scaleFont(15, fontScale), [fontScale]);
   const subtitleSize = useMemo(() => scaleFont(12, fontScale), [fontScale]);
   const accessibilityLabel = comingSoon ? `${title} - Em breve` : title;
+  const isDark = useColorScheme() === "dark";
 
   return (
     <TouchableOpacity
-      style={[styles.card, { backgroundColor: colors.systemBackground }]}
+      style={[styles.card, { backgroundColor: isDark ? colors.tertiarySystemBackground : colors.systemBackground }]}
       onPress={onPress}
       disabled={!onPress}
       accessibilityRole="button"

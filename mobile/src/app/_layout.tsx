@@ -19,9 +19,9 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <NavigationBar style={colorScheme === "dark" ? "light" : "dark"} />
+      <NavigationBar style={colorScheme === "dark" ? "dark" : "light"} />
       <NativeTabs
-        backgroundColor="#FFFFFF"
+        backgroundColor={colors.systemBackground}
         iconColor={{ default: colors.secondaryLabel, selected: colors.coral }}
         screenOptions={{
           headerTintColor: colors.label,

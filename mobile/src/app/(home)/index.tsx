@@ -218,7 +218,7 @@ export default function HomeScreen() {
 
             {/* Last Measurement */}
             {last && (
-              <View style={styles.section}>
+              <View style={[styles.section, { paddingTop: spacing.md }]}>
                 <Card style={styles.lastCard}>
                   <View style={styles.lastCardHeader}>
                     <Text style={styles.lastCardLabel}>ÚLTIMA MEDIÇÃO</Text>
@@ -364,10 +364,10 @@ export default function HomeScreen() {
 
 const createStyles = (colors: ReturnType<typeof useAppColors>) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: "#F8F9FA",
-    },
+     container: {
+       flex: 1,
+       backgroundColor: colors.systemBackground,
+     },
     loadingContainer: {
       padding: spacing.lg,
       gap: spacing.lg,

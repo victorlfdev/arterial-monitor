@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, useColorScheme } from "react-native";
 import Animated from "react-native-reanimated";
 import { useAppColors, spacing, radius } from "@/theme";
 
@@ -7,10 +7,11 @@ const CARD_COUNT = 4;
 
 export function HomeLoadingView() {
   const colors = useAppColors();
+  const isDark = useColorScheme() === "dark";
   return (
     <View style={[styles.container]}>
       {Array.from({ length: CARD_COUNT }, (_, i) => (
-        <Animated.View key={i} style={[styles.card, { backgroundColor: colors.systemBackground }]}>
+        <Animated.View key={i} style={[styles.card, { backgroundColor: isDark ? colors.tertiarySystemBackground : colors.systemBackground }]}>
           <View style={styles.cardRow}>
             <View style={[styles.cardCircle, { backgroundColor: `${colors.separator}4D`, opacity: 0.3 }]}>
               <Animated.View

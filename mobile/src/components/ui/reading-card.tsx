@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ViewProps, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, ViewProps, StyleSheet, useColorScheme } from "react-native";
 import { Icon } from "./Icon";
 import { useAppColors, spacing, radius, shadows } from "@/theme";
 import { Badge } from "./badge";
@@ -36,6 +36,7 @@ export function ReadingCard({
 }: ReadingCardProps) {
   const colors = useAppColors();
   const fontScale = useFontScale();
+  const isDark = useColorScheme() === "dark";
   const cat = classifyPressure(systolic, diastolic);
   const pressureColor =
     cat.color === "green"
@@ -91,7 +92,7 @@ export function ReadingCard({
 
   if (showActions) {
     return (
-      <View style={[styles.card, { backgroundColor: colors.systemBackground }, style]}>
+      <View style={[styles.card, { backgroundColor: isDark ? colors.tertiarySystemBackground : colors.systemBackground }, style]}>
         {onPress ? (
           <TouchableOpacity onPress={onPress} style={{ flex: 1 }} accessibilityRole="button" accessibilityLabel={`Leitura de pressão ${systolic}/${diastolic} mmHg`}>{content}</TouchableOpacity>
         ) : (
@@ -113,7 +114,7 @@ export function ReadingCard({
     );
   }
 
-  return <View style={[styles.card, { backgroundColor: colors.systemBackground }, style]}>{content}</View>;
+  return <View style={[styles.card, { backgroundColor: isDark ? colors.tertiarySystemBackground : colors.systemBackground }, style]}>{content}</View>;
 }
 
 const styles = StyleSheet.create({

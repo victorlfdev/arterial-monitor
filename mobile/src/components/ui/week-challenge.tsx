@@ -1,11 +1,12 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, useColorScheme } from "react-native";
 import { useAppColors, spacing, radius } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
 export function WeekChallenge({ completedCount, totalCount, streakDays }) {
   const colors = useAppColors();
   const fontScale = useFontScale();
+  const isDark = useColorScheme() === "dark";
 
   const progress = completedCount / totalCount;
   const progressWidth = 96 * progress;
@@ -20,7 +21,7 @@ export function WeekChallenge({ completedCount, totalCount, streakDays }) {
     () =>
       StyleSheet.create({
         container: {
-          backgroundColor: colors.systemBackground,
+          backgroundColor: isDark ? colors.tertiarySystemBackground : colors.systemBackground,
           borderRadius: radius.lg,
           padding: spacing.lg,
           marginTop: spacing.sm,
@@ -71,7 +72,7 @@ export function WeekChallenge({ completedCount, totalCount, streakDays }) {
           borderRadius: 4,
         },
       }),
-    [colors, fontScale, progressWidth, subtitleSize, countSize, fs]
+    [colors, fontScale, isDark, progressWidth, subtitleSize, countSize, fs]
   );
 
   return React.createElement(View, { style: styles.container },
