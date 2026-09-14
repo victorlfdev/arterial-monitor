@@ -8,16 +8,17 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
   Text,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { Icon } from "@/components/ui/Icon";
+import { GradientButton } from "@/components/ui/gradient-button";
+import { Card } from "@/components/ui/card";
 import useAppStore from "@/store/useAppStore";
 import { updateReading as apiUpdateReading } from "@/services/api";
 import { saveReading, markSynced } from "@/services/localDB";
-import { useAppColors, spacing, radius, shadowCard } from "@/theme";
+import { useAppColors, spacing, radius } from "@/theme";
 
 export default function NewReadingScreen() {
   const colors = useAppColors();
@@ -121,8 +122,16 @@ export default function NewReadingScreen() {
             {isEditing ? "Editar Medição" : "Nova Medição"}
           </Text>
 
+          <LinearGradient
+            colors={[colors.coral, colors.teal]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.gradientLine}
+          />
+
           {/* Pressure Input */}
           <View style={styles.section}>
+            <Card style={styles.sectionCard}>
             <Text style={styles.sectionTitle}>Pressão Arterial</Text>
             <View style={styles.pressureRow}>
               <View style={styles.pressureInputWrap}>
@@ -154,10 +163,12 @@ export default function NewReadingScreen() {
                 <Text style={styles.inputUnit}>mmHg</Text>
               </View>
             </View>
+            </Card>
           </View>
 
           {/* Heart Rate */}
           <View style={styles.section}>
+            <Card style={styles.sectionCard}>
             <Text style={styles.sectionTitle}>Frequência Cardíaca</Text>
             <View style={styles.inputWrap}>
               <TextInput
@@ -172,10 +183,12 @@ export default function NewReadingScreen() {
               />
               <Text style={styles.suffix}>bpm</Text>
             </View>
+            </Card>
           </View>
 
           {/* Medication */}
           <View style={styles.section}>
+            <Card style={styles.sectionCard}>
             <Text style={styles.sectionTitle}>Medicamento</Text>
             <View style={styles.toggleRow}>
               <TouchableOpacity
@@ -248,10 +261,12 @@ export default function NewReadingScreen() {
                 ))}
               </ScrollView>
             )}
+            </Card>
           </View>
 
           {/* Arm */}
           <View style={styles.section}>
+            <Card style={styles.sectionCard}>
             <Text style={styles.sectionTitle}>Braço</Text>
             <View style={styles.toggleRow}>
               <TouchableOpacity
@@ -293,10 +308,12 @@ export default function NewReadingScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
+            </Card>
           </View>
 
           {/* Symptoms */}
           <View style={styles.section}>
+            <Card style={styles.sectionCard}>
             <Text style={styles.sectionTitle}>Sintomas (opcional)</Text>
             <TextInput
               style={styles.textArea}
@@ -309,12 +326,14 @@ export default function NewReadingScreen() {
               textAlignVertical="top"
               accessibilityLabel="Sintomas"
               accessibilityHint="Descreva quaisquer sintomas observados"
-            />
-          </View>
+              />
+              </Card>
+              </View>
 
-          {/* Notes */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Notas (opcional)</Text>
+              {/* Notes */}
+              <View style={styles.section}>
+              <Card style={styles.sectionCard}>
+              <Text style={styles.sectionTitle}>Notas (opcional)</Text>
             <TextInput
               style={styles.textArea}
               value={notes}
@@ -326,33 +345,19 @@ export default function NewReadingScreen() {
               textAlignVertical="top"
               accessibilityLabel="Notas"
               accessibilityHint="Adicione notas adicionais sobre esta medição"
-            />
-          </View>
+              />
+              </Card>
+              </View>
 
-          {/* Save */}
-          <TouchableOpacity
-            style={[styles.saveBtn, loading && styles.saveBtnDisabled]}
-            onPress={handleSave}
-            disabled={loading}
-            accessibilityRole="button"
-            accessibilityLabel={isEditing ? "Atualizar medição" : "Salvar medição"}
-            accessibilityHint={isEditing ? "Toque para atualizar esta medição" : "Toque para salvar esta medição"}
-          >
-            {loading ? (
-              <ActivityIndicator color={colors.onTint} />
-            ) : (
-              <>
-                <Icon
-                  name={isEditing ? "checkmark-circle" : "save"}
-                  size={24}
-                  color={colors.onTint}
-                />
-                <Text style={styles.saveBtnText}>
-                  {isEditing ? "Atualizar" : "Salvar Medição"}
-                </Text>
-              </>
-            )}
-          </TouchableOpacity>
+              {/* Save */}
+              <View style={styles.saveSection}>
+              <GradientButton
+                title={isEditing ? "Atualizar" : "Salvar Medição"}
+                onPress={handleSave}
+                loading={loading}
+                style={styles.saveBtn}
+              />
+              </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -362,31 +367,36 @@ export default function NewReadingScreen() {
 const createStyles = (c: ReturnType<typeof useAppColors>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: c.secondarySystemBackground,
+    backgroundColor: "#F8F9FA",
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: spacing.lg,
+    paddingTop: spacing.md,
   },
   screenTitle: {
     fontSize: 28,
     fontWeight: "700" as const,
     color: c.label,
+    marginBottom: spacing.sm,
+  },
+  gradientLine: {
+    height: 4,
+    borderRadius: 2,
     marginBottom: spacing.lg,
   },
   section: {
-    backgroundColor: c.systemBackground,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
     marginBottom: spacing.md,
-    ...shadowCard,
+  },
+  sectionCard: {
+    padding: spacing.lg,
   },
   sectionTitle: {
     fontSize: 15,
-    fontWeight: "600" as const,
-    color: c.secondaryLabel,
+    fontWeight: "700" as const,
+    color: c.label,
     marginBottom: spacing.md,
   },
   pressureRow: {
@@ -503,22 +513,10 @@ const createStyles = (c: ReturnType<typeof useAppColors>) => StyleSheet.create({
     color: c.systemBlue,
     fontWeight: "600" as const,
   },
-  saveBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: c.systemBlue,
-    padding: spacing.lg,
-    borderRadius: radius.lg,
+  saveSection: {
     marginTop: spacing.lg,
-    gap: spacing.sm,
   },
-  saveBtnDisabled: {
-    opacity: 0.6,
-  },
-  saveBtnText: {
-    fontSize: 18,
-    fontWeight: "700" as const,
-    color: c.onTint,
+  saveBtn: {
+    minHeight: 52,
   },
 });

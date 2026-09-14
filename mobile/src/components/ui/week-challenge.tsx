@@ -1,112 +1,94 @@
-import React, { useMemo } from "react";
-import { View, Text } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
 import { useAppColors, spacing, radius } from "@/theme";
 import { useFontScale, scaleFont } from "@/theme/fontScale";
 
-interface WeekChallengeProps {
-  completedCount: number;
-  totalCount: number;
-  streakDays?: number;
-}
-
-export function WeekChallenge({ completedCount, totalCount, streakDays }: WeekChallengeProps) {
+export function WeekChallenge({ completedCount, totalCount, streakDays }) {
   const colors = useAppColors();
   const fontScale = useFontScale();
 
-  const progress = useMemo(() => completedCount / totalCount, [completedCount, totalCount]);
-  const progressWidth = useMemo(
-    () => (96 * progress) + "px",
-    [progress]
-  );
+  const progress = completedCount / totalCount;
+  const progressWidth = 96 * progress;
+  const subtitleSize = scaleFont(14, fontScale);
+  const countSize = scaleFont(14, fontScale);
 
-  const subtitleSize = useMemo(() => scaleFont(14, fontScale), [fontScale]);
-  const countSize = useMemo(() => scaleFont(14, fontScale), [fontScale]);
-
-  function fs(base: number) {
+  function fs(base) {
     return scaleFont(base, fontScale);
   }
 
-  return (
-    <View
-      style={{
-        backgroundColor: colors.systemBackground,
-        borderRadius: radius.lg,
-        padding: spacing.lg,
-        marginTop: spacing.sm,
-      }}
-    >
-      <View
-        style={{
+  const styles = React.useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          backgroundColor: colors.systemBackground,
+          borderRadius: radius.lg,
+          padding: spacing.lg,
+          marginTop: spacing.sm,
+        },
+        header: {
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: spacing.sm,
-        }}
-      >
-        <Text style={{ fontSize: fs(17), fontWeight: "700" as const, color: colors.label }}>
-          Desafio da semana
-        </Text>
-        <Text
-          style={{
-            fontSize: countSize,
-            fontWeight: "600" as const,
-            color: colors.teal,
-          }}
-        >
-          {completedCount}/{totalCount} concluídos
-        </Text>
-      </View>
-      <Text
-        style={{
+        },
+        title: {
+          fontSize: fs(17),
+          fontWeight: "700",
+          color: colors.label,
+        },
+        count: {
+          fontSize: countSize,
+          fontWeight: "600",
+          color: colors.teal,
+        },
+        subtitle: {
           fontSize: subtitleSize,
           color: colors.secondaryLabel,
           marginBottom: spacing.md,
-        }}
-      >
-        Meça sua pressão 7 dias seguidos
-      </Text>
-      {streakDays && streakDays >= 7 && (
-        <View
-          style={{
-            backgroundColor: `${colors.amarelo}20`,
-            borderRadius: radius.md,
-            paddingHorizontal: spacing.sm,
-            paddingVertical: spacing.xs,
-            marginBottom: spacing.sm,
-            alignSelf: "flex-end",
-          }}
-        >
-          <Text
-            style={{
-              fontSize: countSize,
-              fontWeight: "600" as const,
-              color: colors.amarelo,
-            }}
-          >
-            {streakDays} dias seguidos! 🔥
-          </Text>
-        </View>
-      )}
-      <View
-        style={{
+        },
+        badge: {
+          backgroundColor: colors.amarelo + "20",
+          borderRadius: radius.md,
+          paddingHorizontal: spacing.sm,
+          paddingVertical: spacing.xs,
+          marginBottom: spacing.sm,
+          alignSelf: "flex-end",
+        },
+        badgeText: {
+          fontSize: countSize,
+          fontWeight: "600",
+          color: colors.amarelo,
+        },
+        progressContainer: {
           height: 8,
           borderRadius: 4,
           backgroundColor: colors.separator,
           overflow: "hidden",
-        }}
-      >
-        <LinearGradient
-          colors={[colors.coral, colors.teal]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={{
-            width: progressWidth,
-            height: "100%",
-            borderRadius: 4,
-          }}
-        />
-      </View>
-    </View>
+        },
+        progressBar: {
+          width: progressWidth,
+          height: "100%",
+          borderRadius: 4,
+        },
+      }),
+    [colors, fontScale, progressWidth, subtitleSize, countSize, fs]
+  );
+
+  return React.createElement(View, { style: styles.container },
+    React.createElement(View, { style: styles.header },
+      React.createElement(Text, { style: styles.title }, "Desafio da semana"),
+      React.createElement(Text, { style: styles.count },
+        String(completedCount) + "/" + String(totalCount) + " conclu\u00EDdos")
+    ),
+    React.createElement(Text, { style: styles.subtitle }, "Me\u00E7a sua press\u00E3o 7 dias seguidos"),
+    streakDays && streakDays >= 7
+      ? React.createElement(View, { style: styles.badge },
+          React.createElement(Text, { style: styles.badgeText },
+            String(streakDays) + " dias seguidos! \uD83D\uDD25")
+        )
+      : null,
+    React.createElement(View, { style: styles.progressContainer },
+      React.createElement(View, { style: styles.progressBar })
+    )
   );
 }

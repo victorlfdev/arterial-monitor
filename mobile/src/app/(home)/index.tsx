@@ -334,7 +334,7 @@ export default function HomeScreen() {
               </View>
             )}
 
-              <View style={styles.section}>
+              <View style={[styles.section, { paddingTop: spacing.sm }]}>
                 <Card>
                   <View style={styles.familyHeader}>
                     <Text style={s.familyTitle}>Família</Text>
