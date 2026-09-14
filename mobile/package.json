@@ -41,13 +41,25 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@react-native/jest-preset": "^0.86.3",
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^14.0.1",
     "@types/react": "~19.2.2",
+    "@types/supertest": "^7.2.1",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~57.0.2",
-    "typescript": "~6.0.3"
+    "jest": "^30.5.1",
+    "jest-expo": "^57.0.5",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.12",
+    "typescript": "~6.0.3",
+    "whatwg-fetch": "^3.6.20"
   },
   "scripts": {
     "start": "expo start",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
