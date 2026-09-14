@@ -1,19 +1,19 @@
 {
   "expo": {
-    "name": "Pressão Arterial",
+    "name": "PressãoViva",
     "slug": "pressao-arterial",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "backgroundColor": "#2196f3",
+      "backgroundColor": "#2EC4B6",
       "resizeMode": "contain",
       "image": "./assets/images/splash-icon.png"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#2196f3"
+        "backgroundColor": "#2EC4B6"
       },
       "package": "com.pressaoarterial.app",
       "scheme": "pressaoarterial"

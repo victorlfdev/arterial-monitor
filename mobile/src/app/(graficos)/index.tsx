@@ -25,7 +25,7 @@ export default function HistoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const fontScale = useFontScale();
-  const { readings, deleteReading } = useAppStore();
+  const { readings, deleteReading, fetchReadings } = useAppStore();
 
   const s = useMemo(() => {
     const fs = (base: number) => scaleFont(base, fontScale);
@@ -50,6 +50,10 @@ export default function HistoryScreen() {
   const uniqueArms = [
     ...new Set(readings.map((r) => r.arm).filter(Boolean)),
   ];
+
+  useEffect(() => {
+    fetchReadings();
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -202,14 +206,14 @@ export default function HistoryScreen() {
                 arm={r.arm || undefined}
                 onPress={() =>
                   router.push({
-                    pathname: "/new-reading",
+                    pathname: "/(home)/new-reading",
                     params: { editingId: r.id, ...r },
                   })
                 }
                 showActions
                 onEdit={() =>
                   router.push({
-                    pathname: "/new-reading",
+                    pathname: "/(home)/new-reading",
                     params: { editingId: r.id, ...r },
                   })
                 }

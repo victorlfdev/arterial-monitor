@@ -1,7 +1,7 @@
-import { Stack } from 'expo-router';
+import { Stack } from 'expo-router/stack';
 import { useAppColors } from '@/theme/colors';
 
-export default function HomeStackLayout() {
+export default function GraficosLayout() {
   const colors = useAppColors();
 
   return (
@@ -19,14 +19,7 @@ export default function HomeStackLayout() {
       <Stack.Screen
         name="index"
         options={{
-          header: () => null,
-        }}
-      />
-      <Stack.Screen
-        name="new-reading"
-        options={{
-          title: 'Nova Medição',
-          presentation: 'modal',
+          title: 'Gráfico',
         }}
       />
     </Stack>

@@ -36,8 +36,8 @@ export default function AmigosScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const friends = [
-    { id: "1", name: "Maria Silva", relation: "Esposa", status: "connected" as const },
-    { id: "2", name: "João Silva", relation: "Filho", status: "pending" as const },
+    { id: "1", name: "Nanci Lima", relation: "Mãe", status: "connected" as const },
+    { id: "2", name: "Francisco Fernandes", relation: "Pai", status: "pending" as const },
   ];
 
   return (

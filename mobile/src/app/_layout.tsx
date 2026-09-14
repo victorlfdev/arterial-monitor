@@ -21,6 +21,8 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <NavigationBar style={colorScheme === "dark" ? "light" : "dark"} />
       <NativeTabs
+        backgroundColor="#FFFFFF"
+        iconColor={{ default: colors.secondaryLabel, selected: colors.coral }}
         screenOptions={{
           headerTintColor: colors.label,
         }}
@@ -29,9 +31,22 @@ export default function RootLayout() {
           <NativeTabs.Trigger.Icon sf="house.fill" md="home" />
           <NativeTabs.Trigger.Label>Início</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="(settings)">
-          <NativeTabs.Trigger.Icon sf="gear" md="settings" />
-          <NativeTabs.Trigger.Label>Configurações</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger name="(graficos)">
+          {/* @ts-expect-error - SF Symbols types are incomplete */}
+          <NativeTabs.Trigger.Icon sf="chart.line" md="trending_up" />
+          <NativeTabs.Trigger.Label>Gráfico</NativeTabs.Trigger.Label>
+        </NativeTabs.Trigger>
+        <NativeTabs.Trigger name="(conquistas)">
+          <NativeTabs.Trigger.Icon sf="trophy" md="emoji_events" />
+          <NativeTabs.Trigger.Label>Conquistas</NativeTabs.Trigger.Label>
+        </NativeTabs.Trigger>
+        <NativeTabs.Trigger name="(amigos)">
+          <NativeTabs.Trigger.Icon sf="person.2" md="people" />
+          <NativeTabs.Trigger.Label>Amigos</NativeTabs.Trigger.Label>
+        </NativeTabs.Trigger>
+        <NativeTabs.Trigger name="(profile)">
+          <NativeTabs.Trigger.Icon sf="person" md="person" />
+          <NativeTabs.Trigger.Label>Perfil</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
       </NativeTabs>
     </ThemeProvider>

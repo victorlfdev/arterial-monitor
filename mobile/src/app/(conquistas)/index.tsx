@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -16,7 +16,7 @@ export default function ConquistasScreen() {
   const colors = useAppColors();
   const insets = useSafeAreaInsets();
   const fontScale = useFontScale();
-  const { readings } = useAppStore();
+  const { readings, fetchReadings } = useAppStore();
   const count = readings.length;
   const has7DayStreak = count >= 7;
   const has100Readings = count >= 100;
@@ -33,6 +33,10 @@ export default function ConquistasScreen() {
       unlockedText: { fontSize: fs(11), fontWeight: "600" as const, color: colors.onTint },
     });
   }, [fontScale, colors]);
+
+  useEffect(() => {
+    fetchReadings();
+  }, []);
 
   const styles = useMemo(() => createStyles(colors), [colors]);
 

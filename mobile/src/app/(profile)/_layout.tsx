@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router/stack';
 import { useAppColors } from '@/theme/colors';
 
-export default function SettingsStackLayout() {
+export default function ProfileLayout() {
   const colors = useAppColors();
 
   return (
@@ -19,7 +19,7 @@ export default function SettingsStackLayout() {
       <Stack.Screen
         name="index"
         options={{
-          header: () => null,
+          title: 'Perfil',
         }}
       />
     </Stack>
