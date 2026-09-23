@@ -2,7 +2,7 @@
 
 ## 1. Visão Geral
 
-**PressãoViva** é um aplicativo mobile para monitoramento de pressão arterial em casa, destinado ao público brasileiro (idioma: Português do Brasil). O app permite que pacientes registrem medições de pressão sistólica/diastólica, frequência cardíaca, medicamentos e sintomas, com visualização histórica, gráficos e gamificação de consistência.
+**PressãoViva** é um aplicativo mobile para monitoramento de pressão arterial em casa. O app permite que pacientes registrem medições de pressão sistólica/diastólica, frequência cardíaca, medicamentos e sintomas, com visualização histórica, gráficos e gamificação de consistência.
 
 ### Status das funcionalidades
 
@@ -41,11 +41,7 @@ Monitoramento domiciliar de hipertensão com gamificação para aumentar a consi
 |---------|--------|-----|
 | @expo/vector-icons | ^15.1.1 | Ícones Material Design + SF Symbols |
 | expo-linear-gradient | ~57.0.2 | Gradientes coral/teal |
-| expo-glass-effect | ~57.0.3 | Efeitos glass |
-| expo-symbols | ~57.0.3 | SF Symbols |
-| @shopify/react-native-skia | 2.6.2 | Renderização GPU (se utilizada) |
-| react-native-gifted-charts | ^1.4.78 | Gráficos de tendência |
-| victory-native | ^42.0.1 | Gráficos alternativos |
+| victory-native | ^42.0.1 | Gráficos de tendência |
 | react-native-reanimated | ^4.5.1 | Animações nativas |
 | react-native-gesture-handler | ~2.32.0 | Gestos |
 | react-native-safe-area-context | ~5.7.0 | Safe area insets |
@@ -59,12 +55,10 @@ Monitoramento domiciliar de hipertensão com gamificação para aumentar a consi
 | date-fns | ^4.4.0 | Formatação de datas (pt-BR locale) |
 | expo-notifications | ^57.0.18 | Push notifications / reminders |
 | expo-linking | ~57.0.10 | Deep linking |
-| expo-system-ui | ~57.0.4 | System UI control |
+| expo-system-ui | ~57.0.4 | System UI control (dark mode + safe areas) |
 | expo-navigation-bar | ~57.0.2 | Android navigation bar |
-| expo-status-bar | ~57.0.1 | Status bar control |
 | expo-constants | ~57.0.18 | Env variables |
 | expo-device | ~57.0.2 | Device info |
-| expo-network | ^57.0.2 | Network status |
 | expo-font | ~57.0.4 | Font loading |
 | expo-image | ~57.0.5 | Image handling |
 | expo-splash-screen | ~57.0.9 | Splash screen |
@@ -84,9 +78,7 @@ Monitoramento domiciliar de hipertensão com gamificação para aumentar a consi
 ### Dependências de Terceiros (compatibilidade SDK 57)
 
 - `@react-native-async-storage/async-storage` — compatível com SDK 57
-- `@shopify/react-native-skia` 2.6.2 — inclui assets WASM (`*.wasm`), configurado no metro.config.js
-- `react-native-gifted-charts` — biblioteca de gráficos (não é package Expo SDK)
-- `victory-native` — gráfico alternativo (não é package Expo SDK)
+- `victory-native` — gráficos de tendência (não é package Expo SDK)
 
 ---
 
@@ -96,7 +88,7 @@ Monitoramento domiciliar de hipertensão com gamificação para aumentar a consi
 mobile/
 ├── app.json                           # Config Expo: nome "PressãoViva", slug, plugins
 ├── babel.config.js                    # Expo preset + reanimated plugin
-├── metro.config.js                    # Expo metro config + WASM asset extension
+├── metro.config.js                    # Expo metro config
 ├── tsconfig.json                      # strict: true, path alias @/* → ./src/*
 ├── package.json
 │
@@ -157,7 +149,7 @@ mobile/
 │   │
 │   ├── constants/
 │   │   └── server.js                  # Server URL config com AsyncStorage + env var fallback
-│   │                               # DEFAULT_SERVER_URL: "http://100.76.124.1:3001" (Tailscale IP)
+│   │                               # DEFAULT_SERVER_URL: "http://100.109.39.19:3001" (Tailscale IP)
 │   │
 │   └── components/
 │       └── ui/                        # Componentes reusáveis
@@ -256,7 +248,7 @@ npx expo prebuild --clean
 A URL do servidor é configurável via:
 1. **Variável de ambiente**: `EXPO_PUBLIC_SERVER_URL` no build
 2. **AsyncStorage**: chave `@pressao_arterial_server_url` (persistente no device)
-3. **Fallback**: `http://100.76.124.1:3001` (Tailscale IP padrão)
+3. **Fallback**: `http://100.109.39.19:3001` (Tailscale IP padrão)
 
 ---
 
@@ -364,7 +356,7 @@ Baseada em AHA/ACC 2017. Tipos: `PressureCategory = "normal" | "elevated" | "hig
 
 ### Server URL
 
-- Default: `http://100.76.124.1:3001` (Tailscale IP)
+- Default: `http://100.109.39.19:3001` (Tailscale IP)
 - Configurável via `EXPO_PUBLIC_SERVER_URL` env var ou AsyncStorage
 - Backend: Express + SQLite em Docker Compose, porta 3001
 
@@ -383,8 +375,7 @@ Baseada em AHA/ACC 2017. Tipos: `PressureCategory = "normal" | "elevated" | "hig
 
 - **`expo` (~57.0.22)** — não fazer upgrade sem verificar compatibilidade
 - **`expo-router` (~57.0.21)** — file-based routing breaking changes
-- **`@shopify/react-native-skia` 2.6.2** — WASM dependency (configurado no metro.config.js)
-- **`react-native-gifted-charts`**, **`victory-native`** — bibliotecas de gráficos com native code
+- **`victory-native`** — biblioteca de gráficos com native code
 
 ### Variáveis de ambiente
 
@@ -468,69 +459,11 @@ Antes de escrever código, consulte a documentação versionada:
 
 - **Docs**: https://docs.expo.dev/versions/v57.0.0/sdk/splash-screen.md
 
-#### expo-status-bar (SDK 57)
-
-- **Docs**: https://docs.expo.dev/versions/v57.0.0/sdk/status-bar.md
-
 #### expo-dev-client (SDK 57)
 
 - **Docs**: https://docs.expo.dev/versions/v57.0.0/sdk/dev-client.md
 - **Propósito**: Permite development builds com custom native code
 - **Instalação**: `npx expo install expo-dev-client`
-
-#### expo-glass-effect (SDK 57)
-
-- **Docs**: https://docs.expo.dev/versions/v57.0.0/sdk/glass-effect.md
-
-#### expo-symbols (SDK 57)
-
-- **Docs**: https://docs.expo.dev/versions/v57.0.0/sdk/symbols.md
-
-### Universal UI (@expo/ui)
-
-#### Visão Geral
-
-- **Docs**: https://docs.expo.dev/versions/v57.0.0/sdk/ui/universal/
-- **Package**: `@expo/ui` (~57.0.18 instalado)
-- **Plataformas**: Android (Jetpack Compose), iOS (SwiftUI), Web (JS)
-- **Padrão**: `Host` wrapper obrigatório para todos os componentes universal
-
-#### Components disponíveis (Universal)
-
-| Component | Descrição |
-|-----------|-----------|
-| `BottomSheet` | Modal sheet deslizante do fundo |
-| `Button` | Botão com variantes visuais |
-| `Checkbox` | Toggle checked/unchecked |
-| `Collapsible` | Header expansível com conteúdo toggle |
-| `Column` | Layout vertical |
-| `FieldGroup` | Container scrollable de rows estilo settings |
-| `Host` | Wrapper obrigatório para conteúdo universal |
-| `Icon` | Ícone nativo (SF Symbol iOS, Material Symbol Android) |
-| `List` | Container virtualizado de rows |
-| `Picker` | Seleção única (menu/wheel) |
-| `Row` | Layout horizontal |
-| `ScrollView` | Scroll vertical ou horizontal |
-| `Slider` | Controle de valor contínuo/step |
-| `Spacer` | Espaçamento entre siblings |
-| `Switch` | Toggle on/off |
-| `Text` | Texto estilizado |
-| `TextInput` | Input text (nativo) |
-| `RNHostView` | Hospedar React Native views dentro de @expo/ui |
-
-#### Quando usar Universal vs. swift-ui/jetpack-compose direto
-
-- **Universal**: uma árvore de componentes para Android, iOS e web
-- **swift-ui / jetpack-compose direto**: quando precisa de controls, modifiers ou comportamento específico da plataforma
-
-#### Drop-in Replacements (SDK 57)
-
-- **BottomSheet**: substituto para @gorhom/bottom-sheet
-- **DateTimePicker**: wrapper para date/time picker
-- **Menu**: menu dropdown
-- **Picker**: @react-native-picker/picker wrapper
-- **SegmentedControl**: controle segmentado
-- **Slider**: @react-native-community/slider wrapper
 
 ### Development Builds
 
@@ -606,7 +539,6 @@ module.exports = function (api) {
 ```js
 const { getDefaultConfig } = require('expo/metro-config');
 const config = getDefaultConfig(__dirname);
-config.resolver.assetExts.push('wasm');  // WASM para @shopify/react-native-skia
 module.exports = config;
 ```
 
