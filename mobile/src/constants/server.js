@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SERVER_URL_STORAGE_KEY = '@pressao_arterial_server_url';
-const DEFAULT_SERVER_URL = 'http://100.76.124.1:3001';
+const DEFAULT_SERVER_URL = 'http://100.109.39.19:3001';
 
 export async function getServerUrl() {
   const savedUrl = process.env.EXPO_PUBLIC_SERVER_URL
